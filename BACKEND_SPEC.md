@@ -13,7 +13,7 @@ This document outlines the API requirements and implementation details for the L
 ## 2. API Specifications
 
 ### Base URL
-`http://localhost:8000` (Local)
+`https://words-learning-service.vercel.app`
 
 ### Endpoints
 
@@ -316,5 +316,5 @@ if __name__ == "__main__":
     ```
 
 4.  **Update Chrome Extension:**
-    *   Modify `utils.js` to fetch from `http://localhost:8000/api/translate` instead of the mock function.
+    *   Modify `utils.js` to fetch from `https://words-learning-service.vercel.app/api/translate` instead of the mock function.
     *   Modify `wordbook.js` and `background.js` to sync with the `/api/words` endpoints.
