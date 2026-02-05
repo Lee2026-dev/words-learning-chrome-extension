@@ -207,3 +207,30 @@ body {
         transform: scale(1) translateY(0);
     }
 }
+
+/* Immersion Translation */
+.lingua-immersion-block {
+    display: block;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    padding: 6px 0;
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #475569;
+    /* Slate 600 */
+    background-color: transparent;
+    border-left: 3px solid var(--primary-color);
+    padding-left: 12px;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+/* Dark mode support if website has dark mode (heuristic) */
+@media (prefers-color-scheme: dark) {
+    .lingua-immersion-block {
+        color: #cbd5e1;
+        /* Slate 300 */
+        border-left-color: var(--secondary-color);
+    }
+}

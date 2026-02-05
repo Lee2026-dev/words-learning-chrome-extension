@@ -1,15 +1,15 @@
 // content.js - Primary Content Script
 
 let highlightEnabled = true;
+let immersionEnabled = false;
 let savedWords = [];
 let bubbleElement = null;
 
 // Initialize
 (async function init() {
     await loadSettings();
-    if (highlightEnabled) {
-        await loadWordsAndHighlight();
-    }
+    if (highlightEnabled) loadWordsAndHighlight();
+    if (immersionEnabled) ImmersionTranslator.start();
 
     // Double click listener
     document.addEventListener('dblclick', (e) => {
@@ -35,6 +35,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         } else {
             removeHighlights();
         }
+    } else if (request.action === "toggleImmersion") {
+        immersionEnabled = request.enabled;
+        if (immersionEnabled) {
+            ImmersionTranslator.start();
+        } else {
+            ImmersionTranslator.stop();
+        }
     }
 });
 
@@ -45,6 +52,7 @@ async function loadSettings() {
         chrome.storage.local.get(['settings'], (result) => {
             if (result.settings) {
                 highlightEnabled = result.settings.highlightEnabled !== false; // Default true
+                immersionEnabled = result.settings.immersionMode === true;     // Default false
             }
             resolve();
         });
@@ -340,6 +348,133 @@ function closeBubbleOutside(e) {
     }
 }
 
+
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+// --- Immersion Translation Logic ---
+const ImmersionTranslator = {
+    observer: null,
+    errorCount: 0,
+    MAX_ERRORS: 3,
+
+    start: function () {
+        if (this.observer) return; // Already running
+        this.errorCount = 0;
+
+        // 1. Setup Intersection Observer
+        this.observer = new IntersectionObserver(this.handleIntersect.bind(this), {
+            root: null,
+            rootMargin: '200px', // Preload
+            threshold: 0.1
+        });
+
+        // 2. Select Candidate Elements
+        // Focus on content blocks
+        const candidates = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li');
+
+        candidates.forEach(el => {
+            // Filter: Must have text, not too short, not already translated
+            if (this.isValidCandidate(el)) {
+                this.observer.observe(el);
+            }
+        });
+
+        console.log("Immersion Mode Started");
+    },
+
+    stop: function () {
+        if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
+        }
+
+        // Remove all injected blocks
+        const blocks = document.querySelectorAll('.lingua-immersion-block');
+        blocks.forEach(el => el.remove());
+
+        // Reset flags on original elements
+        const translated = document.querySelectorAll('[data-lingua-translated]');
+        translated.forEach(el => {
+            el.removeAttribute('data-lingua-translated');
+            el.removeAttribute('data-lingua-translating');
+        });
+
+        console.log("Immersion Mode Stopped");
+    },
+
+    isValidCandidate: function (el) {
+        if (el.hasAttribute('data-lingua-translated') || el.hasAttribute('data-lingua-translating')) return false;
+
+        // Ignore scripts, styles, hidden
+        if (el.offsetParent === null) return false;
+
+        const text = el.innerText.trim();
+        // Min length 20 chars to avoid menus/buttons/dates
+        if (text.length < 20) return false;
+
+        // Ignore if parent is already being processed (simplistic check to avoid nested duplication)
+        // Ideally we check if a heavy ancestor is being translated
+        if (el.closest('[data-lingua-translating]')) return false;
+
+        return true;
+    },
+
+    handleIntersect: function (entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                this.translateBlock(el);
+                observer.unobserve(el); // Only translate once
+            }
+        });
+    },
+
+    translateBlock: async function (el) {
+        if (this.errorCount >= this.MAX_ERRORS) return;
+
+        el.setAttribute('data-lingua-translating', 'true');
+        const text = el.innerText.trim();
+
+        try {
+            const stored = await chrome.storage.local.get('settings');
+            const targetLang = stored.settings?.targetLanguage || 'en';
+
+            // Artificial delay to prevent burst limits if scrolling fast
+            // await new Promise(r => setTimeout(r, 100 + Math.random() * 200));
+
+            const result = await translateText(text, targetLang);
+            if (!result || !result.translation || result.translation.startsWith('[Error]')) {
+                throw new Error(result.translation || "Unknown error");
+            }
+
+            this.injectTranslation(el, result.translation);
+            el.setAttribute('data-lingua-translated', 'true');
+
+        } catch (error) {
+            console.error("Immersion Error:", error);
+            this.errorCount++;
+            if (this.errorCount >= this.MAX_ERRORS) {
+                // Show toast?
+                console.warn("Immersion Translation paused due to errors (Rate Limit?)");
+                this.stop();
+            }
+        } finally {
+            el.removeAttribute('data-lingua-translating');
+        }
+    },
+
+    injectTranslation: function (targetEl, translationText) {
+        const block = document.createElement('div');
+        block.className = 'lingua-immersion-block';
+        block.textContent = translationText;
+
+        // Insert after
+        if (targetEl.nextSibling) {
+            targetEl.parentNode.insertBefore(block, targetEl.nextSibling);
+        } else {
+            targetEl.parentNode.appendChild(block);
+        }
+    }
+};

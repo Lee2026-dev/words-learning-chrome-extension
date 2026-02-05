@@ -32,8 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const newSettings = { ...currentSettings, highlightEnabled: isEnabled };
 
             chrome.storage.local.set({ settings: newSettings }, () => {
-                // Optional: Notify active tab to toggle highlighting immediately
-                // For simplicity, it might just take effect on reload, but let's try to be fancy
                 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                     if (tabs[0]) {
                         chrome.tabs.sendMessage(tabs[0].id, {
@@ -45,6 +43,34 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    // 4. Handle Immersion Toggle Change
+    const immersionToggle = document.getElementById('immersion-toggle');
+    if (immersionToggle) {
+        chrome.storage.local.get(['settings'], (data) => {
+            const settings = data.settings || {};
+            immersionToggle.checked = settings.immersionMode || false;
+        });
+
+        immersionToggle.addEventListener('change', (e) => {
+            const isEnabled = e.target.checked;
+            chrome.storage.local.get(['settings'], (data) => {
+                const currentSettings = data.settings || {};
+                const newSettings = { ...currentSettings, immersionMode: isEnabled };
+
+                chrome.storage.local.set({ settings: newSettings }, () => {
+                    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                        if (tabs[0]) {
+                            chrome.tabs.sendMessage(tabs[0].id, {
+                                action: "toggleImmersion",
+                                enabled: isEnabled
+                            });
+                        }
+                    });
+                });
+            });
+        });
+    }
 
     // 4. Open Word Book
     document.getElementById('open-wordbook').addEventListener('click', () => {
