@@ -1,0 +1,209 @@
+/* styles.css - LinguaLearn Professional Design System */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Palette: LinguaLearn Professional (Teal + Orange) */
+    --primary-color: #0D9488;
+    /* Teal 600 */
+    --primary-hover: #0F766E;
+    /* Teal 700 */
+    --secondary-color: #14B8A6;
+    /* Teal 500 */
+    --cta-color: #F97316;
+    /* Orange 500 */
+    --cta-hover: #EA580C;
+    /* Orange 600 */
+    --bg-color: #F0FDFA;
+    /* Teal 50 */
+    --card-bg: #FFFFFF;
+    --text-main: #134E4A;
+    /* Teal 900 */
+    --text-muted: #64748B;
+    /* Slate 500 */
+    --border-color: #E2E8F0;
+    /* Slate 200 */
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+
+    /* Elevation */
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+    --radius: 12px;
+    --font-family: 'Inter', sans-serif;
+}
+
+/* Reset & Base */
+.lingua-ui-container {
+    all: initial;
+    font-family: var(--font-family);
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-family);
+    margin: 0;
+}
+
+/* UI Components */
+.lingua-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lingua-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.lingua-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.lingua-btn:active {
+    transform: translateY(0);
+}
+
+.lingua-btn-secondary {
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.lingua-btn-secondary:hover {
+    background-color: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.lingua-btn-cta {
+    background-color: var(--cta-color);
+}
+
+.lingua-btn-cta:hover {
+    background-color: var(--cta-hover);
+}
+
+.lingua-btn-danger {
+    background-color: var(--danger-color);
+}
+
+/* Input & Select */
+.lingua-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lingua-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+}
+
+/* Highlight Style */
+.lingua-highlight {
+    background-color: rgba(20, 184, 166, 0.15);
+    /* Soft Teal */
+    border-bottom: 2px solid var(--secondary-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-main);
+}
+
+.lingua-highlight:hover {
+    background-color: rgba(20, 184, 166, 0.3);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Bubble / Tooltip */
+#lingua-bubble-host {
+    position: absolute;
+    z-index: 2147483647;
+    pointer-events: none;
+}
+
+.bubble-content {
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 16px;
+    width: 280px;
+    font-family: var(--font-family);
+    font-size: 14px;
+    animation: lingua-scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bubble-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.bubble-word {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 16px;
+}
+
+.bubble-translation {
+    color: var(--primary-color);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+.bubble-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* Animation */
+@keyframes lingua-scale-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
