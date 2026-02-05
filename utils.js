@@ -1,94 +1,79 @@
-// utils.js
+// utils.js - Bridge to API (Hybrid Strategy)
 
 /**
- * Mock Translation Service (since we don't have a paid API key yet).
- * In a real app, fetch from Google Translate / DeepL API.
- * This mock simulates a delay and returns a dummy translation.
+ * Translate text using Google API first, fallback to Backend if fails.
  */
 async function translateText(text, targetLang) {
     if (!text || !text.trim()) return { translation: "" };
 
+    // 1. Try Google Translate Client-Side (Free, Fast)
     try {
-        // Add dt=rm (romanization/phonetic)
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
         const response = await fetch(url);
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+        if (response.ok) {
+            const data = await response.json();
 
-        const data = await response.json();
+            let translation = "";
+            let phonetic = "";
 
-        // Parse Translation
-        let translation = "";
-        let phonetic = "";
-
-        if (data && data[0]) {
-            // translation is join of 0th index
-            translation = data[0].map(item => item[0]).join('');
-
-            // Phonetic extraction attempt
-            // Usually the last element in data[0] is the source phonetic
-            const lastItem = data[0][data[0].length - 1];
-            const secondLast = data[0][data[0].length - 2];
-
-            if (typeof lastItem === 'string' && lastItem !== translation) {
-                phonetic = lastItem;
-            } else if (Array.isArray(lastItem) && typeof secondLast === 'string') {
-                phonetic = secondLast;
+            if (data && data[0]) {
+                translation = data[0].map(item => item[0]).join('');
+                const lastItem = data[0][data[0].length - 1];
+                const secondLast = data[0][data[0].length - 2];
+                if (typeof lastItem === 'string' && lastItem !== translation) {
+                    phonetic = lastItem;
+                } else if (Array.isArray(lastItem) && typeof secondLast === 'string') {
+                    phonetic = secondLast;
+                }
             }
+            return { translation, phonetic };
+        } else {
+            // 429 Too Many Requests or other error
+            console.warn("Direct Google Translate failed, trying backend fallback...");
         }
+    } catch (e) {
+        console.warn("Direct Google Translate error:", e);
+    }
 
-        return { translation, phonetic };
-
+    // 2. Fallback to Backend API (Hosted / Proxy)
+    try {
+        if (typeof api !== 'undefined') {
+            return await api.translate(text, targetLang);
+        }
     } catch (error) {
-        console.error("Translation Error:", error);
-        return { translation: `[Error] ${error.message}` };
+        console.error("Backend Translate Error:", error);
+    }
+
+    return { translation: "Translation Failed", phonetic: "" };
+}
+
+/**
+ * Save a word to the backend.
+ */
+async function saveWord(original, translation, context, url) {
+    try {
+        if (typeof api !== 'undefined') {
+            return await api.saveWord(original, translation, context, url);
+        }
+        return false;
+    } catch (error) {
+        console.error("Utils SaveWord Error:", error);
+        return false;
     }
 }
 
 /**
- * Save a word to the vocabulary list.
- */
-async function saveWord(original, translation, context, url) {
-    return new Promise((resolve) => {
-        chrome.storage.local.get(['vocabulary'], (result) => {
-            const vocab = result.vocabulary || [];
-
-            // Avoid duplicates based on original text
-            const exists = vocab.some(item => item.original.toLowerCase() === original.toLowerCase());
-
-            if (!exists) {
-                const newWord = {
-                    id: Date.now().toString(),
-                    original,
-                    translation,
-                    context,
-                    url,
-                    timestamp: Date.now(),
-                    learned: false
-                };
-
-                const updatedVocab = [newWord, ...vocab];
-                chrome.storage.local.set({ vocabulary: updatedVocab }, () => {
-                    resolve(true); // Saved successfully
-                });
-            } else {
-                resolve(false); // Already exists
-            }
-        });
-    });
-}
-
-/**
- * Get all saved words.
+ * Get all saved words from backend.
  */
 async function getPendingWords() {
-    return new Promise((resolve) => {
-        chrome.storage.local.get(['vocabulary'], (result) => {
-            const vocab = result.vocabulary || [];
-            // Return words that are not marked as learned (or all for now)
-            resolve(vocab);
-        });
-    });
+    try {
+        if (typeof api !== 'undefined') {
+            return await api.getWords();
+        }
+        return [];
+    } catch (error) {
+        console.error("Utils GetPendingWords Error:", error);
+        return [];
+    }
 }

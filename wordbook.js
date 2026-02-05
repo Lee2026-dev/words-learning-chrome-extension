@@ -31,15 +31,20 @@ function setupTabs() {
     });
 }
 
-function loadWords() {
-    chrome.storage.local.get(['vocabulary'], (result) => {
-        const vocab = result.vocabulary || [];
-        // Sort by newest first
+async function loadWords() {
+    if (typeof api !== 'undefined') {
+        const vocab = await api.getWords();
+        // Sort by newest first (API might already sort, but safe to do client side too)
+        // Backend returns 'timestamp' as float seconds or string?
+        // Usually JSON returns number/string.
         vocab.sort((a, b) => b.timestamp - a.timestamp);
 
         renderWords(vocab);
         renderSentences(vocab);
-    });
+    } else {
+        // Fallback or Error
+        console.error("API not loaded");
+    }
 }
 
 function renderWords(vocab) {
@@ -58,10 +63,13 @@ function renderWords(vocab) {
         const card = document.createElement('div');
         card.className = 'word-card';
 
+        // Handle timestamp conversion (seconds vs ms)
+        const ts = word.timestamp > 10000000000 ? word.timestamp : word.timestamp * 1000;
+
         card.innerHTML = `
             <div class="word-header">
                 <div class="word-original">${word.original}</div>
-                <div style="font-size: 12px; color: #94A3B8;">${new Date(word.timestamp).toLocaleDateString()}</div>
+                <div style="font-size: 12px; color: #94A3B8;">${new Date(ts).toLocaleDateString()}</div>
             </div>
             <div class="word-translation">${word.translation}</div>
             
@@ -117,7 +125,7 @@ function renderSentences(vocab) {
              <div class="sentence-ctx">${highlightedContext}</div>
              <div class="sentence-source">
                 <span>Ref: <strong>${word.original}</strong> (${word.translation})</span>
-                <span title="${word.url}">${new URL(word.url).hostname}</span>
+                <span title="${word.url}">${word.url ? new URL(word.url).hostname : 'unknown'}</span>
              </div>
         `;
         container.appendChild(card);
@@ -152,16 +160,16 @@ function copyText(text) {
     });
 }
 
-function deleteWord(id) {
+async function deleteWord(id) {
     if (confirm('Delete this word (and sentence)?')) {
-        chrome.storage.local.get(['vocabulary'], (result) => {
-            const vocab = result.vocabulary || [];
-            const newVocab = vocab.filter(item => item.id !== id);
-
-            chrome.storage.local.set({ vocabulary: newVocab }, () => {
-                loadWords(); // Re-render both lists
-            });
-        });
+        if (typeof api !== 'undefined') {
+            const success = await api.deleteWord(id);
+            if (success) {
+                loadWords(); // Re-fetch list
+            } else {
+                alert("Failed to delete word");
+            }
+        }
     }
 }
 

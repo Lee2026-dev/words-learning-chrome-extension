@@ -30,6 +30,7 @@
                 "<all_urls>"
             ],
             "js": [
+                "api.js",
                 "utils.js",
                 "content.js"
             ],
