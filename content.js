@@ -60,12 +60,23 @@ async function loadSettings() {
 }
 
 async function loadWordsAndHighlight() {
+    // 1. Fast load from local storage
     chrome.storage.local.get(['vocabulary'], (result) => {
         savedWords = result.vocabulary || [];
         if (savedWords.length > 0) {
             applyHighlights(document.body);
         }
     });
+
+    // 2. Sync with backend to get latest words
+    if (typeof syncVocabulary === 'function') {
+        const freshWords = await syncVocabulary();
+        if (freshWords && freshWords.length > 0) {
+            savedWords = freshWords;
+            // Re-apply highlights with fresh data
+            applyHighlights(document.body);
+        }
+    }
 }
 
 function applyHighlights(rootElement) {

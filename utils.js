@@ -51,10 +51,33 @@ async function translateText(text, targetLang) {
 /**
  * Save a word to the backend.
  */
+/**
+ * Sync vocabulary from backend to local storage.
+ */
+async function syncVocabulary() {
+    try {
+        if (typeof api !== 'undefined') {
+            const words = await api.getWords();
+            await chrome.storage.local.set({ vocabulary: words });
+            return words;
+        }
+    } catch (error) {
+        console.error("Utils SyncVocabulary Error:", error);
+    }
+    return [];
+}
+
+/**
+ * Save a word to the backend.
+ */
 async function saveWord(original, translation, context, url) {
     try {
         if (typeof api !== 'undefined') {
-            return await api.saveWord(original, translation, context, url);
+            const success = await api.saveWord(original, translation, context, url);
+            if (success) {
+                await syncVocabulary();
+            }
+            return success;
         }
         return false;
     } catch (error) {
