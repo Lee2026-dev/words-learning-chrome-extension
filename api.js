@@ -27,12 +27,18 @@ const api = {
     },
 
     /**
-     * Get all vocabulary words.
+     * Get vocabulary words, optionally filtering by timestamp range.
+     * @param {number} [startTime=0] - Filter words updated since this timestamp (seconds).
      * @returns {Promise<Array>}
      */
-    async getWords() {
+    async getWords(startTime = 0) {
         try {
-            const response = await fetch(`${API_BASE}/words`);
+            let url = `${API_BASE}/words`;
+            if (startTime > 0) {
+                // Backend expects 'start_time' query parameter
+                url += `?start_time=${startTime}`;
+            }
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch words');
             return await response.json();
         } catch (error) {

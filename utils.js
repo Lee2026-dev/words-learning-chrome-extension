@@ -52,14 +52,59 @@ async function translateText(text, targetLang) {
  * Save a word to the backend.
  */
 /**
- * Sync vocabulary from backend to local storage.
+ * Sync vocabulary from backend to local storage (Incremental).
  */
 async function syncVocabulary() {
     try {
         if (typeof api !== 'undefined') {
-            const words = await api.getWords();
-            await chrome.storage.local.set({ vocabulary: words });
-            return words;
+            const data = await chrome.storage.local.get(['vocabulary', 'lastSyncTimestamp']);
+            let localWords = data.vocabulary || [];
+            const lastSync = data.lastSyncTimestamp || 0;
+
+            console.log(`Syncing vocabulary since: ${lastSync}`);
+
+            // Fetch only new/changed words from backend
+            const newWords = await api.getWords(lastSync);
+
+            if (newWords.length > 0) {
+                // Merge strategy: Create Map from localWords for easy lookup/update
+                // Key: id (Assuming backend provides unique ids)
+                const wordMap = new Map();
+
+                localWords.forEach(w => {
+                    if (w && w.id) wordMap.set(w.id, w);
+                });
+
+                // Add/Update with new words
+                newWords.forEach(w => {
+                    if (w && w.id) wordMap.set(w.id, w);
+                });
+
+                // Convert back to array
+                localWords = Array.from(wordMap.values());
+
+                // Sort by newest first
+                localWords.sort((a, b) => b.timestamp - a.timestamp);
+
+                // Update storage
+                // Use current server time or safely rely on Date.now() for next sync
+                // We use a safe margin (e.g., max timestamp in list or Date.now())
+                // Using Date.now() / 1000 is simplest for client-side tracking
+                await chrome.storage.local.set({
+                    vocabulary: localWords,
+                    lastSyncTimestamp: Date.now() / 1000
+                });
+
+                console.log(`Synced ${newWords.length} new words.`);
+                return localWords;
+            } else {
+                // No new words, but we should update timestamp to avoid re-checking too old window?
+                // Actually, if nothing changed, our lastSync is still valid for next time check.
+                // But if we want to move the window forward to "now", we can.
+                // Let's keep it simple: update timestamp only if we talked to server successfully.
+                await chrome.storage.local.set({ lastSyncTimestamp: Date.now() / 1000 });
+            }
+            return localWords;
         }
     } catch (error) {
         console.error("Utils SyncVocabulary Error:", error);
