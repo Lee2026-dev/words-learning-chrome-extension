@@ -392,6 +392,13 @@ function showSavedWordBubble(e, wordObj) {
             api.updateWord(wordObj.id, { learned: newLearned }).then(success => {
                 if (success) {
                     wordObj.learned = newLearned;
+
+                    // Update the bottom indicator text
+                    const indicator = host.querySelector('.bubble-content > div:last-child');
+                    if (indicator) {
+                        indicator.innerHTML = `${checkIcon} ${newLearned ? 'Mastered' : 'Saved'}`;
+                    }
+
                     // Update storage
                     chrome.storage.local.get(['vocabulary'], (data) => {
                         const vocab = data.vocabulary || [];
@@ -480,13 +487,13 @@ function renderBubbleSetup(host, original, translation, isLoading, context, cont
 
             const finalContext = context || window.location.href;
 
-            const success = await saveWord(original, translation, finalContext, window.location.href, phonetic);
-            if (success) {
+            const savedWord = await saveWord(original, translation, finalContext, window.location.href, phonetic);
+            if (savedWord) {
                 saveBtn.innerHTML = `${checkIcon} <span>Saved</span>`;
                 saveBtn.style.backgroundColor = "var(--success-color)";
 
                 // Refresh highlights
-                savedWords.push({ original, translation, phonetic, context: finalContext });
+                savedWords.push(savedWord);
                 applyHighlights(document.body);
             } else {
                 saveBtn.innerHTML = `<span>Saved</span>`;

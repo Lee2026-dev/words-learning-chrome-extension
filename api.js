@@ -49,11 +49,7 @@ const api = {
 
     /**
      * Save a new word.
-     * @param {string} original 
-     * @param {string} translation 
-     * @param {string} context 
-     * @param {string} url 
-     * @returns {Promise<boolean>} success
+     * @returns {Promise<Object|null>} saved word object
      */
     async saveWord(original, translation, context, url, phonetic) {
         try {
@@ -73,9 +69,27 @@ const api = {
                 body: JSON.stringify(payload)
             });
 
-            return response.ok;
+            if (response.ok) return await response.json();
+            return null;
         } catch (error) {
             console.error('API SaveWord Error:', error);
+            return null;
+        }
+    },
+
+    /**
+     * Update a word by ID.
+     */
+    async updateWord(wordId, data) {
+        try {
+            const response = await fetch(`${API_BASE}/words/${wordId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('API UpdateWord Error:', error);
             return false;
         }
     },

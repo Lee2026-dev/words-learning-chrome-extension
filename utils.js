@@ -124,20 +124,17 @@ async function syncVocabulary() {
 async function saveWord(original, translation, context, url, phonetic) {
     try {
         if (typeof api !== 'undefined') {
-            // Optimistic update: Return true immediately to unblock UI
-            // Perform actual save and sync in background
-            api.saveWord(original, translation, context, url, phonetic).then(success => {
-                if (success) {
-                    syncVocabulary();
-                }
-            }).catch(err => console.error("Background Save Error:", err));
-
-            return true;
+            const savedWord = await api.saveWord(original, translation, context, url, phonetic);
+            if (savedWord) {
+                // Background sync to ensure local storage is up to date
+                syncVocabulary();
+                return savedWord;
+            }
         }
-        return false;
+        return null;
     } catch (error) {
         console.error("Utils SaveWord Error:", error);
-        return false;
+        return null;
     }
 }
 
