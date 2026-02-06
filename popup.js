@@ -1,30 +1,26 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Update Word Count (from API)
-    if (typeof api !== 'undefined') {
-        try {
-            const words = await api.getWords();
-            document.getElementById('word-count').textContent = words.length;
-        } catch (e) {
-            console.error("Failed to load words for popup:", e);
-        }
-    }
+    // 1. Update Word Count (Optimistic)
+    chrome.storage.local.get(['vocabulary'], (result) => {
+        const localWords = result.vocabulary || [];
+        document.getElementById('word-count').textContent = localWords.length;
 
-    // 2. Settings Management
-    // We strive to keep local storage in sync with Backend
-    chrome.storage.local.get(['settings'], async (data) => {
+        // Background sync
+        if (typeof api !== 'undefined') {
+            api.getWords().then(words => {
+                if (words && words.length !== localWords.length) {
+                    document.getElementById('word-count').textContent = words.length;
+                    // Optional: update local storage if needed, but utils.syncVocabulary does that better.
+                }
+            }).catch(e => console.error("Background word count fetch failed:", e));
+        }
+    });
+
+    // 2. Settings Management (Optimistic)
+    chrome.storage.local.get(['settings'], (data) => {
         let settings = data.settings || { highlightEnabled: true, targetLanguage: 'zh', immersionMode: false, youtubeSubtitlesEnabled: true };
 
-        // Try to fetch latest from API if online
-        if (typeof api !== 'undefined') {
-            const remoteSettings = await api.getSettings();
-            if (remoteSettings) {
-                settings = { ...settings, ...remoteSettings };
-                chrome.storage.local.set({ settings });
-            }
-        }
-
-        // Init UI
+        // Init UI immediately
         const highlightToggle = document.getElementById('highlight-toggle');
         const langSelect = document.getElementById('target-lang');
         const immersionToggle = document.getElementById('immersion-toggle');
@@ -35,11 +31,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (immersionToggle) immersionToggle.checked = settings.immersionMode === true;
         if (youtubeToggle) youtubeToggle.checked = settings.youtubeSubtitlesEnabled !== false;
 
+        // Background sync settings
+        if (typeof api !== 'undefined') {
+            api.getSettings().then(remoteSettings => {
+                if (remoteSettings) {
+                    // Check if settings changed
+                    const newSettings = { ...settings, ...remoteSettings };
+                    if (JSON.stringify(newSettings) !== JSON.stringify(settings)) {
+                        chrome.storage.local.set({ settings: newSettings });
+                        // Update UI if changed
+                        if (highlightToggle) highlightToggle.checked = newSettings.highlightEnabled !== false;
+                        if (langSelect) langSelect.value = newSettings.targetLanguage || 'zh';
+                        if (immersionToggle) immersionToggle.checked = newSettings.immersionMode === true;
+                        if (youtubeToggle) youtubeToggle.checked = newSettings.youtubeSubtitlesEnabled !== false;
+                    }
+                }
+            }).catch(e => console.error("Background settings sync failed:", e));
+        }
+
         // Listeners
         if (langSelect) {
             langSelect.addEventListener('change', (e) => {
-                const newLang = e.target.value;
-                updateSetting('targetLanguage', newLang);
+                updateSetting('targetLanguage', e.target.value);
             });
         }
 

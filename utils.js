@@ -66,30 +66,26 @@ async function syncVocabulary() {
             // Fetch only new/changed words from backend
             const newWords = await api.getWords(lastSync);
 
-            if (newWords.length > 0) {
+            if (newWords && newWords.length > 0) {
                 // Merge strategy: Create Map from localWords for easy lookup/update
-                // Key: id (Assuming backend provides unique ids)
                 const wordMap = new Map();
 
                 localWords.forEach(w => {
-                    if (w && w.id) wordMap.set(w.id, w);
+                    if (w && (w.id || w.original)) wordMap.set(w.id || w.original, w);
                 });
 
                 // Add/Update with new words
                 newWords.forEach(w => {
-                    if (w && w.id) wordMap.set(w.id, w);
+                    if (w && (w.id || w.original)) wordMap.set(w.id || w.original, w);
                 });
 
                 // Convert back to array
                 localWords = Array.from(wordMap.values());
 
                 // Sort by newest first
-                localWords.sort((a, b) => b.timestamp - a.timestamp);
+                localWords.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
                 // Update storage
-                // Use current server time or safely rely on Date.now() for next sync
-                // We use a safe margin (e.g., max timestamp in list or Date.now())
-                // Using Date.now() / 1000 is simplest for client-side tracking
                 await chrome.storage.local.set({
                     vocabulary: localWords,
                     lastSyncTimestamp: Date.now() / 1000
@@ -97,17 +93,22 @@ async function syncVocabulary() {
 
                 console.log(`Synced ${newWords.length} new words.`);
                 return localWords;
+            } else {
                 // No new words found
                 // Update timestamp to confirm we synced successfully up to this point
                 await chrome.storage.local.set({ lastSyncTimestamp: Date.now() / 1000 });
-                return null; // Return null to indicate no changes
+                return localWords; // Return current local words
             }
         }
-        return null; // Safety fallthrough
+        // Fallback: If api is undefined, just return local words
+        const data = await chrome.storage.local.get(['vocabulary']);
+        return data.vocabulary || [];
     } catch (error) {
         console.error("Utils SyncVocabulary Error:", error);
+        // Last resort fallback
+        const data = await chrome.storage.local.get(['vocabulary']);
+        return data.vocabulary || [];
     }
-    return [];
 }
 
 /**

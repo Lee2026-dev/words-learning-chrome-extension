@@ -8,7 +8,10 @@ let bubbleElement = null;
 // Initialize
 (async function init() {
     await loadSettings();
-    if (highlightEnabled) loadWordsAndHighlight();
+    if (highlightEnabled) {
+        await loadWordsAndHighlight(); // Ensure words are loaded before starting
+        startObserver();
+    }
     if (immersionEnabled) ImmersionTranslator.start();
 
     // Double click listener
@@ -30,16 +33,58 @@ let bubbleElement = null;
     });
 })();
 
+// --- Mutation Observer for Dynamic Content ---
+let observer = null;
+let highlightDebounceTimer = null;
+
+function startObserver() {
+    if (observer) return;
+    observer = new MutationObserver((mutations) => {
+        let shouldHighlight = false;
+        for (const mutation of mutations) {
+            if (mutation.addedNodes.length > 0) {
+                // Check if any added node is a relevant element or text node
+                for (let node of mutation.addedNodes) {
+                    if (node.nodeType === 1 || node.nodeType === 3) {
+                        shouldHighlight = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldHighlight) break;
+        }
+
+        if (shouldHighlight) {
+            clearTimeout(highlightDebounceTimer);
+            highlightDebounceTimer = setTimeout(() => {
+                if (savedWords.length > 0 && highlightEnabled) {
+                    applyHighlights(document.body);
+                }
+            }, 800);
+        }
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
 // Listen for messages from Popup or Background
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "translateSelection") {
         handleTranslateSelection(request.text);
     } else if (request.action === "toggleHighlight") {
         highlightEnabled = request.enabled;
         if (highlightEnabled) {
-            loadWordsAndHighlight();
+            await loadWordsAndHighlight();
+            startObserver();
         } else {
             removeHighlights();
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
         }
     } else if (request.action === "toggleImmersion") {
         immersionEnabled = request.enabled;
@@ -66,35 +111,65 @@ async function loadSettings() {
 }
 
 async function loadWordsAndHighlight() {
-    // 1. Fast load from local storage
-    chrome.storage.local.get(['vocabulary'], (result) => {
+    try {
+        // 1. Fast load from local storage
+        const result = await chrome.storage.local.get(['vocabulary']);
         savedWords = result.vocabulary || [];
+
         if (savedWords.length > 0) {
             applyHighlights(document.body);
         }
-    });
 
-    // 2. Sync with backend to get latest words
-    if (typeof syncVocabulary === 'function') {
-        const freshWords = await syncVocabulary();
-        if (freshWords && freshWords.length > 0) {
-            savedWords = freshWords;
-            // Re-apply highlights with fresh data
-            applyHighlights(document.body);
+        // 2. Sync with backend to get latest words
+        if (typeof syncVocabulary === 'function') {
+            const freshWords = await syncVocabulary();
+            if (freshWords && freshWords.length > 0) {
+                savedWords = freshWords;
+                applyHighlights(document.body);
+            }
         }
+    } catch (e) {
+        console.error("LinguaLearn: Error loading words:", e);
     }
 }
 
 function applyHighlights(rootElement) {
+    if (!rootElement || !savedWords || savedWords.length === 0) return;
+
+    // Pre-compile word map and regex for performance
+    const wordMap = new Map();
+    const escapedTerms = [];
+
+    savedWords.forEach(w => {
+        if (w && w.original) {
+            const term = w.original.toLowerCase();
+            if (!wordMap.has(term)) {
+                wordMap.set(term, w);
+                escapedTerms.push(escapeRegExp(w.original));
+            }
+        }
+    });
+
+    if (escapedTerms.length === 0) return;
+
+    // Create a single regex for all words
+    // \b is great for English but might fail for CJK.
+    // For now we stick with \b but we could make it configurable.
+    const combinedRegex = new RegExp(`\\b(${escapedTerms.join('|')})\\b`, 'gi');
+
     const walker = document.createTreeWalker(
         rootElement,
         NodeFilter.SHOW_TEXT,
         {
             acceptNode: function (node) {
-                if (node.parentElement.tagName.match(/SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION|NOSCRIPT/)) {
+                const parent = node.parentElement;
+                if (!parent) return NodeFilter.FILTER_REJECT;
+
+                const tagName = parent.tagName;
+                if (tagName.match(/SCRIPT|STYLE|TEXTAREA|INPUT|SELECT|OPTION|NOSCRIPT|CANVAS|SVG/)) {
                     return NodeFilter.FILTER_REJECT;
                 }
-                if (node.parentElement.classList.contains('lingua-highlight')) {
+                if (parent.classList.contains('lingua-highlight') || parent.closest('.lingua-highlight')) {
                     return NodeFilter.FILTER_REJECT;
                 }
                 if (node.nodeValue.trim().length === 0) {
@@ -109,49 +184,47 @@ function applyHighlights(rootElement) {
 
     while (walker.nextNode()) {
         const node = walker.currentNode;
-        const text = node.nodeValue;
-
-        let hasMatch = false;
-
-        for (const wordObj of savedWords) {
-            const word = wordObj.original;
-            const regex = new RegExp(`\\b(${escapeRegExp(word)})\\b`, 'gi');
-
-            if (regex.test(text)) {
-                nodesToReplace.push({ node, wordObj });
-                hasMatch = true;
-                break;
-            }
+        if (combinedRegex.test(node.nodeValue)) {
+            nodesToReplace.push(node);
         }
+        combinedRegex.lastIndex = 0; // Reset after test
     }
 
-    nodesToReplace.forEach(({ node, wordObj }) => {
-        const span = document.createElement('span');
-        span.className = 'lingua-highlight';
-        span.textContent = node.nodeValue;
-
-        const parent = node.parentNode;
+    nodesToReplace.forEach(node => {
         const textContent = node.nodeValue;
-        const word = wordObj.original;
-        const regex = new RegExp(`(${escapeRegExp(word)})`, 'gi');
+        const parent = node.parentNode;
+        if (!parent) return;
 
-        const parts = textContent.split(regex);
+        // Split by the combined regex, keeping the matches
+        const parts = textContent.split(combinedRegex);
 
         if (parts.length > 1) {
             const fragment = document.createDocumentFragment();
+
             parts.forEach(part => {
-                if (part.toLowerCase() === word.toLowerCase()) {
+                const lowerPart = part.toLowerCase();
+                const wordObj = wordMap.get(lowerPart);
+
+                if (wordObj) {
                     const highlightSpan = document.createElement('span');
                     highlightSpan.className = 'lingua-highlight';
                     highlightSpan.textContent = part;
                     highlightSpan.title = `${wordObj.translation}`;
-                    highlightSpan.onclick = (e) => showSavedWordBubble(e, wordObj);
+                    highlightSpan.onclick = (e) => {
+                        e.stopPropagation();
+                        showSavedWordBubble(e, wordObj);
+                    };
                     fragment.appendChild(highlightSpan);
                 } else {
                     fragment.appendChild(document.createTextNode(part));
                 }
             });
-            parent.replaceChild(fragment, node);
+
+            try {
+                parent.replaceChild(fragment, node);
+            } catch (e) {
+                // Node might have been removed under us (MutationObserver race)
+            }
         }
     });
 }
