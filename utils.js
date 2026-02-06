@@ -114,12 +114,12 @@ async function syncVocabulary() {
 /**
  * Save a word to the backend.
  */
-async function saveWord(original, translation, context, url) {
+async function saveWord(original, translation, context, url, phonetic) {
     try {
         if (typeof api !== 'undefined') {
             // Optimistic update: Return true immediately to unblock UI
             // Perform actual save and sync in background
-            api.saveWord(original, translation, context, url).then(success => {
+            api.saveWord(original, translation, context, url, phonetic).then(success => {
                 if (success) {
                     syncVocabulary();
                 }

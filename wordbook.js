@@ -65,10 +65,14 @@ function renderWords(vocab) {
 
         // Handle timestamp conversion (seconds vs ms)
         const ts = word.timestamp > 10000000000 ? word.timestamp : word.timestamp * 1000;
+        const phoneticHtml = word.phonetic ? `<span style="font-size: 13px; color: #64748B; font-family: monospace; margin-left: 8px;">[${word.phonetic}]</span>` : '';
 
         card.innerHTML = `
             <div class="word-header">
-                <div class="word-original">${word.original}</div>
+                <div>
+                    <span class="word-original">${word.original}</span>
+                    ${phoneticHtml}
+                </div>
                 <div style="font-size: 12px; color: #94A3B8;">${new Date(ts).toLocaleDateString()}</div>
             </div>
             <div class="word-translation">${word.translation}</div>

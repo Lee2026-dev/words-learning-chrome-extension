@@ -55,11 +55,12 @@ const api = {
      * @param {string} url 
      * @returns {Promise<boolean>} success
      */
-    async saveWord(original, translation, context, url) {
+    async saveWord(original, translation, context, url, phonetic) {
         try {
             const payload = {
                 original,
                 translation,
+                phonetic,
                 context,
                 url,
                 timestamp: Date.now() / 1000,

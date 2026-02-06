@@ -344,10 +344,19 @@ function showSavedWordBubble(e, wordObj) {
     const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success-color)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
     const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
+    // Phonetic HTML
+    let phoneticHtml = "";
+    if (wordObj.phonetic) {
+        phoneticHtml = `<span style="font-size:13px; color:#64748b; margin-left:8px; font-family:monospace;">[${wordObj.phonetic}]</span>`;
+    }
+
     host.innerHTML = `
         <div class="bubble-content">
             <div class="bubble-header">
-                <span class="bubble-word">${wordObj.original}</span>
+                <div>
+                     <span class="bubble-word">${wordObj.original}</span>
+                     ${phoneticHtml}
+                </div>
                 <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
             </div>
             <div class="bubble-translation">${wordObj.translation}</div>
@@ -431,13 +440,13 @@ function renderBubbleSetup(host, original, translation, isLoading, context, cont
 
             const finalContext = context || window.location.href;
 
-            const success = await saveWord(original, translation, finalContext, window.location.href);
+            const success = await saveWord(original, translation, finalContext, window.location.href, phonetic);
             if (success) {
                 saveBtn.innerHTML = `${checkIcon} <span>Saved</span>`;
                 saveBtn.style.backgroundColor = "var(--success-color)";
 
                 // Refresh highlights
-                savedWords.push({ original, translation, context: finalContext });
+                savedWords.push({ original, translation, phonetic, context: finalContext });
                 applyHighlights(document.body);
             } else {
                 saveBtn.innerHTML = `<span>Saved</span>`;
