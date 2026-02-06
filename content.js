@@ -343,6 +343,7 @@ function showSavedWordBubble(e, wordObj) {
     // SVG Icons
     const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success-color)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
     const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
 
     // Phonetic HTML
     let phoneticHtml = "";
@@ -357,7 +358,10 @@ function showSavedWordBubble(e, wordObj) {
                      <span class="bubble-word">${wordObj.original}</span>
                      ${phoneticHtml}
                 </div>
-                <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
+                <div style="display:flex; gap:4px;">
+                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: var(--primary-color);" id="lingua-speak-btn">${volumeIcon}</button>
+                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
+                </div>
             </div>
             <div class="bubble-translation">${wordObj.translation}</div>
             <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
@@ -365,6 +369,12 @@ function showSavedWordBubble(e, wordObj) {
             </div>
         </div>
     `;
+
+    // Bind events
+    host.querySelector('#lingua-speak-btn').onclick = () => {
+        const utterance = new SpeechSynthesisUtterance(wordObj.original);
+        speechSynthesis.speak(utterance);
+    };
 
     host.querySelector('#lingua-close-btn').onclick = closeBubble;
     document.addEventListener('mousedown', closeBubbleOutside);
