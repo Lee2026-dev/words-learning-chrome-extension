@@ -14,17 +14,24 @@ async function translateText(text, targetLang) {
         if (response.ok) {
             const data = await response.json();
 
-            let translation = "";
-            let phonetic = "";
-
             if (data && data[0]) {
-                translation = data[0].map(item => item[0]).join('');
-                const lastItem = data[0][data[0].length - 1];
-                const secondLast = data[0][data[0].length - 2];
-                if (typeof lastItem === 'string' && lastItem !== translation) {
-                    phonetic = lastItem;
-                } else if (Array.isArray(lastItem) && typeof secondLast === 'string') {
-                    phonetic = secondLast;
+                // Translation is usually in data[0][0][0], data[0][1][0]...
+                // We join them just in case there are multiple chunks
+                translation = data[0]
+                    .filter(item => item && item[0] && item[1] !== null) // Filter for translation chunks
+                    .map(item => item[0])
+                    .join('');
+
+                // Phonetic/Romanization is often in the last element of data[0] or data[0][1]
+                // It usually has null as its first two elements.
+                const romanizationArray = data[0].find(item =>
+                    Array.isArray(item) && item.length >= 3 && item[0] === null && item[1] === null
+                );
+
+                if (romanizationArray) {
+                    // index 3 is source language IPA/phonetic (e.g. [ˈSHôrtˌkət])
+                    // index 2 is target language romanization (e.g. Jiéjìng)
+                    phonetic = romanizationArray[3] || romanizationArray[2] || "";
                 }
             }
             return { translation, phonetic };
