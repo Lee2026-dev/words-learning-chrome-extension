@@ -97,18 +97,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         chrome.tabs.create({ url: 'wordbook.html' });
     });
 
-    // 5. Translate Page
-    document.getElementById('translate-page').addEventListener('click', () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs[0]?.url) {
-                chrome.storage.local.get(['settings'], (d) => {
-                    const lang = d.settings?.targetLanguage || 'zh';
-                    const url = `https://translate.google.com/translate?sl=auto&tl=${lang}&u=${encodeURIComponent(tabs[0].url)}`;
-                    chrome.tabs.create({ url });
-                });
-            }
-        });
-    });
 });
 
 function updateSetting(key, value) {
@@ -133,7 +121,8 @@ function updateSetting(key, value) {
             const payload = {
                 target_language: newSettings.targetLanguage,
                 highlight_enabled: newSettings.highlightEnabled,
-                immersion_mode: newSettings.immersionMode
+                immersion_mode: newSettings.immersionMode,
+                youtube_subtitles_enabled: newSettings.youtubeSubtitlesEnabled
             };
             api.updateSettings(payload);
         }
