@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. Settings Management
     // We strive to keep local storage in sync with Backend
     chrome.storage.local.get(['settings'], async (data) => {
-        let settings = data.settings || { highlightEnabled: true, targetLanguage: 'zh', immersionMode: false };
+        let settings = data.settings || { highlightEnabled: true, targetLanguage: 'zh', immersionMode: false, youtubeSubtitlesEnabled: true };
 
         // Try to fetch latest from API if online
         if (typeof api !== 'undefined') {
@@ -28,10 +28,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const highlightToggle = document.getElementById('highlight-toggle');
         const langSelect = document.getElementById('target-lang');
         const immersionToggle = document.getElementById('immersion-toggle');
+        const youtubeToggle = document.getElementById('youtube-toggle');
 
         if (highlightToggle) highlightToggle.checked = settings.highlightEnabled !== false;
         if (langSelect) langSelect.value = settings.targetLanguage || 'zh';
         if (immersionToggle) immersionToggle.checked = settings.immersionMode === true;
+        if (youtubeToggle) youtubeToggle.checked = settings.youtubeSubtitlesEnabled !== false;
 
         // Listeners
         if (langSelect) {
@@ -52,6 +54,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             immersionToggle.addEventListener('change', (e) => {
                 updateSetting('immersionMode', e.target.checked);
                 notifyTab('toggleImmersion', e.target.checked);
+            });
+        }
+
+        if (youtubeToggle) {
+            youtubeToggle.addEventListener('change', (e) => {
+                updateSetting('youtubeSubtitlesEnabled', e.target.checked);
+                notifyTab('toggleYoutubeSubtitles', e.target.checked);
             });
         }
     });

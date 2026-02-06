@@ -37,6 +37,16 @@
             "css": [
                 "styles.css"
             ]
+        },
+        {
+            "matches": [
+                "*://*.youtube.com/*"
+            ],
+            "js": [
+                "utils.js",
+                "youtube.js"
+            ],
+            "run_at": "document_idle"
         }
     ],
     "web_accessible_resources": [

@@ -22,6 +22,12 @@ let bubbleElement = null;
             handleTranslateSelection(text);
         }
     });
+
+    // Listen for custom word clicks (e.g. from YouTube overlay)
+    document.addEventListener('lingua-word-click', (e) => {
+        const { word, x, y } = e.detail;
+        handleExternalWordClick(word, x, y);
+    });
 })();
 
 // Listen for messages from Popup or Background
@@ -189,6 +195,22 @@ async function handleTranslateSelection(selectionText) {
     updateBubbleContent(selectionText, wordResult.translation, context, contextResult.translation, wordResult.phonetic);
 }
 
+async function handleExternalWordClick(word, x, y) {
+    if (!word) return;
+
+    // Show loading bubble at specific coordinates
+    showBubbleAt(x, y, word, "Translating...", true);
+
+    const stored = await chrome.storage.local.get('settings');
+    const targetLang = stored.settings?.targetLanguage || 'en';
+
+    // Translate
+    const result = await translateText(word, targetLang);
+
+    // Update bubble
+    updateBubbleContent(word, result.translation, "", "", result.phonetic);
+}
+
 function createBubbleElement() {
     if (document.getElementById('lingua-bubble-host')) {
         return document.getElementById('lingua-bubble-host');
@@ -210,6 +232,23 @@ function showBubble(original, translation, isLoading = false, context = "", cont
 
     const top = rect.bottom + window.scrollY + 10;
     const left = rect.left + window.scrollX;
+
+    host.style.top = `${top}px`;
+    host.style.left = `${left}px`;
+
+    renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
+
+    renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
+
+    document.addEventListener('mousedown', closeBubbleOutside);
+}
+
+function showBubbleAt(x, y, original, translation, isLoading = false, context = "", contextTranslation = "", phonetic = "") {
+    const host = createBubbleElement();
+
+    // Coordinates from event are clientX/Y, add scroll for absolute positioning
+    const top = y + window.scrollY + 20;
+    const left = x + window.scrollX;
 
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;

@@ -235,3 +235,67 @@
         border-left-color: var(--secondary-color);
     }
 }
+
+/* YouTube Subtitles Overlay - Translation Only */
+#lingua-yt-captions {
+    position: absolute;
+    bottom: 30px;
+    /* Moved down below native captions */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    text-align: center;
+    pointer-events: none;
+    /* Let clicks pass through since it is just display now */
+    z-index: 1000;
+    font-family: "YouTube Noto", Roboto, Arial, sans-serif;
+    line-height: 1.5;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.lingua-yt-line {
+    display: inline-block;
+    background-color: rgba(8, 8, 8, 0.75);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.lingua-word {
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    padding: 0 2px;
+}
+
+.lingua-word:hover {
+    color: #4ade80;
+    /* Light green hover */
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Hide native captions but keep them accessible to scraper */
+.lingua-hidden-native {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    /* We don't use display:none because that might stop YouTube from updating them */
+}
+
+.lingua-yt-translation {
+    margin-top: 8px;
+    background-color: rgba(8, 8, 8, 0.85);
+    /* Slightly darker */
+    color: #FCD34D;
+    /* Amber 300 - distinct from white text */
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px black;
+    max-width: 90%;
+}
