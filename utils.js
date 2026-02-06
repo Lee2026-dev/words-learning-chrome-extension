@@ -97,15 +97,13 @@ async function syncVocabulary() {
 
                 console.log(`Synced ${newWords.length} new words.`);
                 return localWords;
-            } else {
-                // No new words, but we should update timestamp to avoid re-checking too old window?
-                // Actually, if nothing changed, our lastSync is still valid for next time check.
-                // But if we want to move the window forward to "now", we can.
-                // Let's keep it simple: update timestamp only if we talked to server successfully.
+                // No new words found
+                // Update timestamp to confirm we synced successfully up to this point
                 await chrome.storage.local.set({ lastSyncTimestamp: Date.now() / 1000 });
+                return null; // Return null to indicate no changes
             }
-            return localWords;
         }
+        return null; // Safety fallthrough
     } catch (error) {
         console.error("Utils SyncVocabulary Error:", error);
     }
@@ -118,11 +116,15 @@ async function syncVocabulary() {
 async function saveWord(original, translation, context, url) {
     try {
         if (typeof api !== 'undefined') {
-            const success = await api.saveWord(original, translation, context, url);
-            if (success) {
-                await syncVocabulary();
-            }
-            return success;
+            // Optimistic update: Return true immediately to unblock UI
+            // Perform actual save and sync in background
+            api.saveWord(original, translation, context, url).then(success => {
+                if (success) {
+                    syncVocabulary();
+                }
+            }).catch(err => console.error("Background Save Error:", err));
+
+            return true;
         }
         return false;
     } catch (error) {
