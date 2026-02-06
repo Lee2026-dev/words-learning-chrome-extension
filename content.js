@@ -344,12 +344,17 @@ function showSavedWordBubble(e, wordObj) {
     const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success-color)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
     const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
     const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+    const medalIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5h4l-2-5z"></path><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.11"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 
     // Phonetic HTML
     let phoneticHtml = "";
     if (wordObj.phonetic) {
         phoneticHtml = `<span style="font-size:13px; color:#64748b; margin-left:8px; font-family:monospace;">[${wordObj.phonetic}]</span>`;
     }
+
+    const isMastered = wordObj.learned === true;
+    const masterColor = isMastered ? "var(--success-color)" : "#94a3b8";
+    const masterTitle = isMastered ? "Mastered" : "Mark as Mastered";
 
     host.innerHTML = `
         <div class="bubble-content">
@@ -359,13 +364,14 @@ function showSavedWordBubble(e, wordObj) {
                      ${phoneticHtml}
                 </div>
                 <div style="display:flex; gap:4px;">
+                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: ${masterColor};" id="lingua-master-btn" title="${masterTitle}">${medalIcon}</button>
                      <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: var(--primary-color);" id="lingua-speak-btn">${volumeIcon}</button>
                      <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
                 </div>
             </div>
             <div class="bubble-translation">${wordObj.translation}</div>
             <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
-                ${checkIcon} Saved
+                ${checkIcon} ${wordObj.learned ? 'Mastered' : 'Saved'}
             </div>
         </div>
     `;
@@ -374,6 +380,30 @@ function showSavedWordBubble(e, wordObj) {
     host.querySelector('#lingua-speak-btn').onclick = () => {
         const utterance = new SpeechSynthesisUtterance(wordObj.original);
         speechSynthesis.speak(utterance);
+    };
+
+    host.querySelector('#lingua-master-btn').onclick = async (e) => {
+        const newLearned = !wordObj.learned;
+        const btn = e.currentTarget;
+        btn.style.color = newLearned ? "var(--success-color)" : "#94a3b8";
+
+        // Update local and remote
+        if (typeof api !== 'undefined') {
+            api.updateWord(wordObj.id, { learned: newLearned }).then(success => {
+                if (success) {
+                    wordObj.learned = newLearned;
+                    // Update storage
+                    chrome.storage.local.get(['vocabulary'], (data) => {
+                        const vocab = data.vocabulary || [];
+                        const index = vocab.findIndex(v => v.id === wordObj.id);
+                        if (index !== -1) {
+                            vocab[index].learned = newLearned;
+                            chrome.storage.local.set({ vocabulary: vocab });
+                        }
+                    });
+                }
+            });
+        }
     };
 
     host.querySelector('#lingua-close-btn').onclick = closeBubble;

@@ -1,20 +1,34 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Update Word Count (Optimistic)
+    // 1. Update Word Counts (Optimistic)
     chrome.storage.local.get(['vocabulary'], (result) => {
         const localWords = result.vocabulary || [];
-        document.getElementById('word-count').textContent = localWords.length;
+        updateStatsUI(localWords);
 
         // Background sync
         if (typeof api !== 'undefined') {
             api.getWords().then(words => {
-                if (words && words.length !== localWords.length) {
-                    document.getElementById('word-count').textContent = words.length;
-                    // Optional: update local storage if needed, but utils.syncVocabulary does that better.
+                if (words) {
+                    updateStatsUI(words);
                 }
             }).catch(e => console.error("Background word count fetch failed:", e));
         }
     });
+
+    function updateStatsUI(words) {
+        const total = words.length;
+        const mastered = words.filter(w => w.learned).length;
+        const percentage = total > 0 ? Math.round((mastered / total) * 100) : 0;
+
+        document.getElementById('word-count').textContent = total;
+        document.getElementById('mastered-count').textContent = mastered;
+
+        const progressBar = document.getElementById('mastery-progress');
+        const progressInfo = document.getElementById('mastery-info');
+
+        if (progressBar) progressBar.style.width = `${percentage}%`;
+        if (progressInfo) progressInfo.textContent = `${percentage}% Proficiency`;
+    }
 
     // 2. Settings Management (Optimistic)
     chrome.storage.local.get(['settings'], (data) => {

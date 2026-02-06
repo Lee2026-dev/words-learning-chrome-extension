@@ -23,10 +23,20 @@
 
         <div class="content-wrapper">
             <div class="stats-card">
-                <div class="stat-item">
-                    <span class="stat-label">Words Collected</span>
-                    <span class="stat-value" id="word-count">0</span>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Collected</span>
+                        <span class="stat-value" id="word-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Mastered</span>
+                        <span class="stat-value" id="mastered-count">0</span>
+                    </div>
                 </div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="mastery-progress"></div>
+                </div>
+                <div class="progress-info" id="mastery-info">0% Proficiency</div>
                 <div class="stat-icon-bg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
