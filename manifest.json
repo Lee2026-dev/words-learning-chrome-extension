@@ -43,8 +43,10 @@
                 "*://*.youtube.com/*"
             ],
             "js": [
-                "utils.js",
                 "youtube.js"
+            ],
+            "css": [
+                "styles.css"
             ],
             "run_at": "document_idle"
         }

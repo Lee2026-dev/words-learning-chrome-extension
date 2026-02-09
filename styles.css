@@ -248,21 +248,25 @@
     }
 }
 
-/* YouTube Subtitles Overlay - Translation Only */
+/* YouTube Subtitles Overlay - Bilingual Format */
 #lingua-yt-captions {
     position: absolute;
-    bottom: 30px;
-    /* Moved down below native captions */
+    bottom: 80px;
+    /* Positioned higher to avoid controls */
     left: 50%;
     transform: translateX(-50%);
     width: 80%;
     text-align: center;
     pointer-events: none;
-    /* Let clicks pass through since it is just display now */
+    /* Let clicks pass through */
     z-index: 1000;
     font-family: "YouTube Noto", Roboto, Arial, sans-serif;
     line-height: 1.5;
-    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    /* Space between English and Chinese */
 }
 
 .lingua-yt-line {
@@ -297,19 +301,38 @@
     /* We don't use display:none because that might stop YouTube from updating them */
 }
 
-.lingua-yt-translation {
-    margin-top: 8px;
-    background-color: rgba(8, 8, 8, 0.85);
-    /* Slightly darker */
-    color: #FCD34D;
-    /* Amber 300 - distinct from white text */
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 20px;
-    font-weight: 500;
-    text-shadow: 0 1px 2px black;
+/* English Original Subtitle */
+.lingua-yt-original {
+    background-color: rgba(8, 8, 8, 0.75);
+    color: #ffffff;
+    display: block;
+    /* Changed from inline-block to block for vertical stacking */
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 22px;
+    font-weight: 400;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
     max-width: 90%;
+    line-height: 1.4;
+}
+
+/* Chinese Translation Subtitle */
+.lingua-yt-translation {
+    background-color: rgba(8, 8, 8, 0.85);
+    /* Slightly darker for distinction */
+    color: #FCD34D;
+    /* Amber color for Chinese */
+    display: block;
+    /* Changed from inline-block to block for vertical stacking */
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 19px;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    max-width: 90%;
+    line-height: 1.4;
+    border-left: 3px solid #FCD34D;
+    /* Visual indicator that this is translation */
 }
 
 /* Trigger Icon for Selection */
