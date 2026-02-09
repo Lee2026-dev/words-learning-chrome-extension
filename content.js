@@ -113,8 +113,57 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         } else {
             ImmersionTranslator.stop();
         }
+    } else if (request.action === "updateHighlightStyle") {
+        // Update all existing highlights with new style
+        const highlights = document.querySelectorAll('.lingua-highlight');
+        highlights.forEach(span => {
+            applyHighlightStyle(span, request.style, request.color);
+        });
     }
 });
+
+// Apply highlight style based on settings
+function applyHighlightStyle(element, style, color) {
+    // Get settings from storage if not provided
+    if (!style || !color) {
+        chrome.storage.local.get(['settings'], (data) => {
+            const settings = data.settings || {};
+            const highlightStyle = settings.highlightStyle || 'underline';
+            const highlightColor = settings.highlightColor || '#FCD34D';
+            applyStyle(element, highlightStyle, highlightColor);
+        });
+    } else {
+        applyStyle(element, style, color);
+    }
+
+    function applyStyle(el, s, c) {
+        // Reset styles
+        el.style.textDecoration = '';
+        el.style.textDecorationColor = '';
+        el.style.textDecorationThickness = '';
+        el.style.textUnderlineOffset = '';
+        el.style.backgroundColor = '';
+        el.style.fontWeight = '';
+        el.style.color = '';
+        el.style.padding = '';
+        el.style.borderRadius = '';
+
+        // Apply style
+        if (s === 'underline') {
+            el.style.textDecoration = 'underline';
+            el.style.textDecorationColor = c;
+            el.style.textDecorationThickness = '2px';
+            el.style.textUnderlineOffset = '2px';
+        } else if (s === 'background') {
+            el.style.backgroundColor = c;
+            el.style.padding = '2px 4px';
+            el.style.borderRadius = '3px';
+        } else if (s === 'bold') {
+            el.style.fontWeight = '700';
+            el.style.color = c;
+        }
+    }
+}
 
 // --- Highlighting Logic ---
 
@@ -230,6 +279,10 @@ function applyHighlights(rootElement) {
                     highlightSpan.className = 'lingua-highlight';
                     highlightSpan.textContent = part;
                     highlightSpan.title = `${wordObj.translation}`;
+
+                    // Apply dynamic highlight style
+                    applyHighlightStyle(highlightSpan);
+
                     highlightSpan.onclick = (e) => {
                         e.stopPropagation();
                         showSavedWordBubble(e, wordObj);

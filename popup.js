@@ -90,6 +90,119 @@ document.addEventListener('DOMContentLoaded', async () => {
                 notifyTab('toggleYoutubeSubtitles', e.target.checked);
             });
         }
+
+        // Highlighter Customization Panel
+        const highlightPanel = document.getElementById('highlight-settings-panel');
+        const styleBtns = document.querySelectorAll('.style-btn');
+        const colorSwatches = document.querySelectorAll('.color-swatch');
+        const customColorPicker = document.getElementById('custom-color-picker');
+        const previewText = document.getElementById('preview-text');
+
+        // Initialize highlighter settings
+        const highlightStyle = settings.highlightStyle || 'underline';
+        const highlightColor = settings.highlightColor || '#FCD34D';
+
+        // Set initial panel visibility
+        if (highlightToggle && highlightToggle.checked) {
+            highlightPanel.classList.add('visible');
+        }
+
+        // Toggle panel visibility when highlight toggle changes
+        if (highlightToggle) {
+            highlightToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    highlightPanel.classList.add('visible');
+                } else {
+                    highlightPanel.classList.remove('visible');
+                }
+            });
+        }
+
+        // Set initial active style button
+        styleBtns.forEach(btn => {
+            if (btn.dataset.style === highlightStyle) {
+                btn.classList.add('active');
+            }
+        });
+
+        // Set initial active color swatch
+        colorSwatches.forEach(swatch => {
+            if (swatch.dataset.color === highlightColor) {
+                swatch.classList.add('active');
+            }
+        });
+
+        // Set custom color picker value
+        if (customColorPicker) {
+            customColorPicker.value = highlightColor;
+        }
+
+        // Update preview
+        updatePreview(highlightStyle, highlightColor);
+
+        // Style button click handlers
+        styleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                styleBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const newStyle = btn.dataset.style;
+                updateSetting('highlightStyle', newStyle);
+                updatePreview(newStyle, highlightColor);
+                notifyTab('updateHighlightStyle', { style: newStyle, color: highlightColor });
+            });
+        });
+
+        // Color swatch click handlers
+        colorSwatches.forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                colorSwatches.forEach(s => s.classList.remove('active'));
+                swatch.classList.add('active');
+
+                const newColor = swatch.dataset.color;
+                updateSetting('highlightColor', newColor);
+                if (customColorPicker) customColorPicker.value = newColor;
+                updatePreview(highlightStyle, newColor);
+                notifyTab('updateHighlightStyle', { style: highlightStyle, color: newColor });
+            });
+        });
+
+        // Custom color picker handler
+        if (customColorPicker) {
+            customColorPicker.addEventListener('input', (e) => {
+                const newColor = e.target.value;
+                colorSwatches.forEach(s => s.classList.remove('active'));
+                updateSetting('highlightColor', newColor);
+                updatePreview(highlightStyle, newColor);
+                notifyTab('updateHighlightStyle', { style: highlightStyle, color: newColor });
+            });
+        }
+
+        // Preview update function
+        function updatePreview(style, color) {
+            if (!previewText) return;
+
+            // Remove all style classes
+            previewText.className = 'preview-highlight';
+
+            // Add current style class
+            previewText.classList.add(`style-${style}`);
+
+            // Apply color
+            if (style === 'underline') {
+                previewText.style.textDecorationColor = color;
+                previewText.style.backgroundColor = '';
+                previewText.style.color = '';
+            } else if (style === 'background') {
+                previewText.style.backgroundColor = color;
+                previewText.style.textDecorationColor = '';
+                previewText.style.color = '';
+            } else if (style === 'bold') {
+                previewText.style.color = color;
+                previewText.style.backgroundColor = '';
+                previewText.style.textDecorationColor = '';
+            }
+        }
     });
 
     // 4. Open Word Book
