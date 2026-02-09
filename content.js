@@ -329,7 +329,7 @@ async function handleTranslateSelection(selectionText) {
         if (context.length > 200) context = context.substring(0, 200) + "...";
     }
 
-    showBubble(selectionText, "Translating...", true, context);
+    showBubble(selectionText, "正在翻译...", true, context);
 
     // Parallel translation of Word and Context
     // translateText now returns full object { translation, phonetic, meanings, audio_url, ... }
@@ -346,7 +346,7 @@ async function handleExternalWordClick(word, x, y) {
     if (!word) return;
 
     // Show loading bubble at specific coordinates
-    showBubbleAt(x, y, word, "Translating...", true);
+    showBubbleAt(x, y, word, "正在翻译...", true);
 
     const stored = await chrome.storage.local.get('settings');
     const targetLang = stored.settings?.targetLanguage || 'en';
@@ -421,7 +421,7 @@ async function showSavedWordBubble(e, wordObj) {
     host.style.left = `${left}px`;
 
     // 1. Show dynamic loading state using existing renderer
-    renderBubbleSetup(host, wordObj.original, "Updating...", true, wordObj.context, "", wordObj.phonetic);
+    renderBubbleSetup(host, wordObj.original, "更新中...", true, wordObj.context, "", wordObj.phonetic);
     document.addEventListener('mousedown', closeBubbleOutside);
 
     // 2. Fetch fresh rich data from backend (ECDICT)
@@ -489,13 +489,13 @@ function renderSavedBubbleRich(host, wordObj, richData) {
                      ${phoneticHtml}
                 </div>
                 <div style="display:flex; gap:4px; align-items:flex-start;">
-                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${masterColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-master-btn" title="Mark as Mastered">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${masterColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-master-btn" title="标记为已掌握">
                         ${statusIcon}
                      </button>
-                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-unsave-btn" title="Already Saved">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-unsave-btn" title="已收藏">
                         ${heartFilled}
                      </button>
-                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-close-btn" title="Close">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-close-btn" title="关闭">
                         ${closeIcon}
                      </button>
                 </div>
@@ -516,7 +516,7 @@ function renderSavedBubbleRich(host, wordObj, richData) {
 
     const unsaveBtn = host.querySelector('#lingua-unsave-btn');
     unsaveBtn.onclick = async () => {
-        if (confirm(`Remove "${original}" from Wordbook?`)) {
+        if (confirm(`确定要从生词本中移除 "${original}" 吗？`)) {
             if (typeof api !== 'undefined') {
                 const success = await api.deleteWord(wordObj.id);
                 if (success) {

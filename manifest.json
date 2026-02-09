@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "LinguaLearn - Helper",
+    "name": "LinguaLearn - 语言学习助手",
     "version": "1.0",
-    "description": "Translate text, save vocabulary, and learn new languages while browsing.",
+    "description": "网页划词翻译，一键收藏生词，随时随地开启你的语言学习之旅。",
     "permissions": [
         "storage",
         "contextMenus",

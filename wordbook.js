@@ -53,7 +53,7 @@ function renderWords(vocab) {
     const stats = document.getElementById('stats-summary');
 
     container.innerHTML = '';
-    stats.textContent = `${vocab.length} Words & Sentences`;
+    stats.textContent = `共 ${vocab.length} 个单词和例句`;
 
     if (vocab.length === 0) {
         renderEmpty(container);
@@ -75,17 +75,17 @@ function renderWords(vocab) {
                 <div>
                     <span class="word-original">${word.original}</span>
                     ${phoneticHtml}
-                    ${word.learned ? '<span class="mastered-badge">Mastered</span>' : ''}
+                    ${word.learned ? '<span class="mastered-badge">已掌握</span>' : ''}
                 </div>
                 <div style="font-size: 12px; color: #94A3B8;">${new Date(ts).toLocaleDateString()}</div>
             </div>
             <div class="word-translation">${word.translation}</div>
             
             <div class="word-meta">
-                <button class="icon-btn mastery-toggle" title="Mark as Mastered" style="color: ${medalColor}">${icons.medal}</button>
-                <button class="icon-btn" title="Speak">${icons.volume}</button>
-                <button class="icon-btn" title="Copy">${icons.copy}</button>
-                <button class="icon-btn delete" title="Delete">${icons.trash}</button>
+                <button class="icon-btn mastery-toggle" title="标记为已掌握" style="color: ${medalColor}">${icons.medal}</button>
+                <button class="icon-btn" title="朗读">${icons.volume}</button>
+                <button class="icon-btn" title="复制">${icons.copy}</button>
+                <button class="icon-btn delete" title="删除">${icons.trash}</button>
             </div>
         `;
 
@@ -138,8 +138,8 @@ function renderSentences(vocab) {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">${icons.empty}</div>
-                <h2>No sentences yet</h2>
-                <p>Save words from articles to see them here.</p>
+                <h2>暂无例句</h2>
+                <p>从网页中收藏单词后即可在此查看相关上下文。</p>
             </div>
         `;
         return;
@@ -154,8 +154,8 @@ function renderSentences(vocab) {
         card.innerHTML = `
              <div class="sentence-ctx">${highlightedContext}</div>
              <div class="sentence-source">
-                <span>Ref: <strong>${word.original}</strong> (${word.translation})</span>
-                <span title="${word.url}">${word.url ? new URL(word.url).hostname : 'unknown'}</span>
+                <span>关联词汇: <strong>${word.original}</strong> (${word.translation})</span>
+                <span title="${word.url}">${word.url ? new URL(word.url).hostname : '未知'}</span>
              </div>
         `;
         container.appendChild(card);
@@ -166,8 +166,8 @@ function renderEmpty(container) {
     container.innerHTML = `
         <div class="empty-state">
             <div class="empty-icon">${icons.empty}</div>
-            <h2>No items yet</h2>
-            <p>Go to any website, select a word, and save it!</p>
+            <h2>暂无收藏</h2>
+            <p>去任意网页选中并收藏你感兴趣的单词吧！</p>
         </div>
     `;
 }
@@ -186,18 +186,18 @@ function speakText(text) {
 
 function copyText(text) {
     navigator.clipboard.writeText(text).then(() => {
-        showFlash("Copied to clipboard!");
+        showFlash("已复制到剪贴板！");
     });
 }
 
 async function deleteWord(id) {
-    if (confirm('Delete this word (and sentence)?')) {
+    if (confirm('确定要从生词本中删除这个单词吗？')) {
         if (typeof api !== 'undefined') {
             const success = await api.deleteWord(id);
             if (success) {
                 loadWords(); // Re-fetch list
             } else {
-                alert("Failed to delete word");
+                alert("删除失败");
             }
         }
     }

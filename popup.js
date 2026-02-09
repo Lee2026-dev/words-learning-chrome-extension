@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const progressInfo = document.getElementById('mastery-info');
 
         if (progressBar) progressBar.style.width = `${percentage}%`;
-        if (progressInfo) progressInfo.textContent = `${percentage}% Proficiency`;
+        if (progressInfo) progressInfo.textContent = `${percentage}% 掌握度`;
     }
 
     // 2. Settings Management (Optimistic)

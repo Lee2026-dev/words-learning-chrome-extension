@@ -25,18 +25,18 @@
             <div class="stats-card">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <span class="stat-label">Collected</span>
+                        <span class="stat-label">已收藏</span>
                         <span class="stat-value" id="word-count">0</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label">Mastered</span>
+                        <span class="stat-label">已掌握</span>
                         <span class="stat-value" id="mastered-count">0</span>
                     </div>
                 </div>
                 <div class="progress-container">
                     <div class="progress-bar" id="mastery-progress"></div>
                 </div>
-                <div class="progress-info" id="mastery-info">0% Proficiency</div>
+                <div class="progress-info" id="mastery-info">0% 掌握度</div>
                 <div class="stat-icon-bg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -63,12 +63,12 @@
                                 </svg>
                             </div>
                             <div class="setting-text">
-                                <span class="setting-label">Target Language</span>
-                                <span class="setting-desc">Language to translate into</span>
+                                <span class="setting-label">目标语言</span>
+                                <span class="setting-desc">翻译的目标语言</span>
                             </div>
                         </div>
                         <select id="target-lang" class="lingua-select">
-                            <option value="zh">Chinese</option>
+                            <option value="zh">中文</option>
                         </select>
                     </div>
                 </div>
@@ -86,8 +86,8 @@
                                 </svg>
                             </div>
                             <div class="setting-text">
-                                <span class="setting-label">Highlighter</span>
-                                <span class="setting-desc">Show saved words</span>
+                                <span class="setting-label">高亮单词</span>
+                                <span class="setting-desc">高亮显示已收藏的单词</span>
                             </div>
                         </div>
                         <label class="switch">
@@ -100,15 +100,15 @@
                     <div id="highlight-settings-panel" class="highlight-sub-panel">
                         <!-- Style Selector -->
                         <div class="sub-section">
-                            <label class="sub-label">Style</label>
+                            <label class="sub-label">样式</label>
                             <div class="style-selector">
-                                <button class="style-btn active" data-style="underline" title="Underline">
+                                <button class="style-btn active" data-style="underline" title="下划线">
                                     <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
                                 </button>
-                                <button class="style-btn" data-style="background" title="Background Highlight">
+                                <button class="style-btn" data-style="background" title="背景高亮">
                                     <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
                                 </button>
-                                <button class="style-btn" data-style="bold" title="Bold">
+                                <button class="style-btn" data-style="bold" title="粗体">
                                     <strong>B</strong>
                                 </button>
                             </div>
@@ -116,19 +116,19 @@
 
                         <!-- Color Picker -->
                         <div class="sub-section">
-                            <label class="sub-label">Color</label>
+                            <label class="sub-label">颜色</label>
                             <div class="color-palette">
                                 <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
-                                    title="Yellow"></div>
-                                <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80"
-                                    title="Green"></div>
-                                <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6"
-                                    title="Pink"></div>
-                                <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA"
-                                    title="Blue"></div>
-                                <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA"
-                                    title="Purple"></div>
-                                <label class="color-picker-wrapper" title="Custom Color">
+                                    title="黄色"></div>
+                                <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
+                                </div>
+                                <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
+                                </div>
+                                <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
+                                </div>
+                                <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
+                                </div>
+                                <label class="color-picker-wrapper" title="自定义颜色">
                                     <input type="color" id="custom-color-picker" value="#FCD34D">
                                     <div class="color-picker-icon">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -149,9 +149,9 @@
 
                         <!-- Preview -->
                         <div class="sub-section">
-                            <label class="sub-label">Preview</label>
+                            <label class="sub-label">预览</label>
                             <div class="preview-box">
-                                This is a <span id="preview-text" class="preview-highlight">sample</span> text.
+                                这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
                             </div>
                         </div>
                     </div>
@@ -171,8 +171,8 @@
                                 </svg>
                             </div>
                             <div class="setting-text">
-                                <span class="setting-label">Immersion</span>
-                                <span class="setting-desc">Auto-translate content</span>
+                                <span class="setting-label">沉浸式阅读</span>
+                                <span class="setting-desc">自动翻译页面内容</span>
                             </div>
                         </div>
                         <label class="switch">
@@ -197,8 +197,8 @@
                                 </svg>
                             </div>
                             <div class="setting-text">
-                                <span class="setting-label">YouTube Subs</span>
-                                <span class="setting-desc">Dual subtitles</span>
+                                <span class="setting-label">YouTube 字幕</span>
+                                <span class="setting-desc">显示双语字幕</span>
                             </div>
                         </div>
                         <label class="switch">
@@ -216,7 +216,7 @@
                         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                     </svg>
-                    Word Book
+                    打开生词本
                 </button>
             </div>
         </div>
