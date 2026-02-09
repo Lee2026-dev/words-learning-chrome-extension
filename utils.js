@@ -6,7 +6,20 @@
 async function translateText(text, targetLang) {
     if (!text || !text.trim()) return { translation: "" };
 
-    // 1. Try Google Translate Client-Side (Free, Fast)
+    // 1. Try Backend API First (Rich Dictionary Data)
+    try {
+        if (typeof api !== 'undefined') {
+            const result = await api.translate(text, targetLang);
+            // Check if we got a valid translation
+            if (result && result.translation && result.translation !== "[Offline/Error]") {
+                return result;
+            }
+        }
+    } catch (error) {
+        console.warn("Backend Translate failed, falling back to Google...", error);
+    }
+
+    // 2. Fallback to Google Translate Client-Side (Free, Fast, but simple)
     try {
         const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
         const response = await fetch(url);
@@ -15,41 +28,25 @@ async function translateText(text, targetLang) {
             const data = await response.json();
 
             if (data && data[0]) {
-                // Translation is usually in data[0][0][0], data[0][1][0]...
-                // We join them just in case there are multiple chunks
-                translation = data[0]
-                    .filter(item => item && item[0] && item[1] !== null) // Filter for translation chunks
+                const translation = data[0]
+                    .filter(item => item && item[0] && item[1] !== null)
                     .map(item => item[0])
                     .join('');
 
-                // Phonetic/Romanization is often in the last element of data[0] or data[0][1]
-                // It usually has null as its first two elements.
                 const romanizationArray = data[0].find(item =>
                     Array.isArray(item) && item.length >= 3 && item[0] === null && item[1] === null
                 );
 
+                let phonetic = "";
                 if (romanizationArray) {
-                    // index 3 is source language IPA/phonetic (e.g. [ˈSHôrtˌkət])
-                    // index 2 is target language romanization (e.g. Jiéjìng)
                     phonetic = romanizationArray[3] || romanizationArray[2] || "";
                 }
+
+                return { translation, phonetic };
             }
-            return { translation, phonetic };
-        } else {
-            // 429 Too Many Requests or other error
-            console.warn("Direct Google Translate failed, trying backend fallback...");
         }
     } catch (e) {
         console.warn("Direct Google Translate error:", e);
-    }
-
-    // 2. Fallback to Backend API (Hosted / Proxy)
-    try {
-        if (typeof api !== 'undefined') {
-            return await api.translate(text, targetLang);
-        }
-    } catch (error) {
-        console.error("Backend Translate Error:", error);
     }
 
     return { translation: "Translation Failed", phonetic: "" };

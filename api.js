@@ -1,6 +1,7 @@
 // api.js - Backend API Client
 
-const API_BASE = "https://words-learning-service.vercel.app/api";
+const API_BASE = "http://localhost:8081/api";
+// const API_BASE = "https://words-learning-service.vercel.app/api";
 
 const api = {
     /**

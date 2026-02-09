@@ -14,15 +14,35 @@ let bubbleElement = null;
     }
     if (immersionEnabled) ImmersionTranslator.start();
 
-    // Double click listener
-    document.addEventListener('dblclick', (e) => {
-        // Only translate if not clicking inside an existing bubble or interactive element
-        if (e.target.closest('.lingua-btn') || e.target.closest('#lingua-bubble-host')) return;
+    // Text Selection Listener (MouseUp)
+    document.addEventListener('mouseup', (e) => {
+        // Delay slightly to ensure selection is final
+        setTimeout(() => {
+            const selection = window.getSelection();
+            const text = selection.toString().trim();
 
-        const selection = window.getSelection();
-        const text = selection.toString().trim();
-        if (text && text.length > 0) {
-            handleTranslateSelection(text);
+            // If clicking inside the bubble or trigger, do nothing
+            if (e.target.closest('#lingua-bubble-host') || e.target.closest('.lingua-trigger-icon')) return;
+
+            if (text && text.length > 0 && text.length < 100) { // Limit length to avoid accidental paragraph selects
+                const range = selection.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                // Position at the end of the selection
+                const x = rect.right + window.scrollX;
+                const y = rect.bottom + window.scrollY + 5;
+
+                showTriggerIcon(x, y, text);
+            } else {
+                hideTriggerIcon();
+            }
+        }, 10);
+    });
+
+    // Hide trigger on mousedown (if not clicking the trigger itself)
+    document.addEventListener('mousedown', (e) => {
+        if (!e.target.closest('.lingua-trigger-icon')) {
+            hideTriggerIcon();
         }
     });
 
@@ -259,13 +279,14 @@ async function handleTranslateSelection(selectionText) {
     showBubble(selectionText, "Translating...", true, context);
 
     // Parallel translation of Word and Context
-    // translateText now returns object { translation, phonetic }
+    // translateText now returns full object { translation, phonetic, meanings, audio_url, ... }
     const [wordResult, contextResult] = await Promise.all([
         translateText(selectionText, targetLang),
         context ? translateText(context, targetLang) : Promise.resolve({ translation: "" })
     ]);
 
-    updateBubbleContent(selectionText, wordResult.translation, context, contextResult.translation, wordResult.phonetic);
+    // Pass the full wordResult object to support rich display
+    updateBubbleContent(selectionText, wordResult, context, contextResult.translation, wordResult.phonetic);
 }
 
 async function handleExternalWordClick(word, x, y) {
@@ -280,8 +301,8 @@ async function handleExternalWordClick(word, x, y) {
     // Translate
     const result = await translateText(word, targetLang);
 
-    // Update bubble
-    updateBubbleContent(word, result.translation, "", "", result.phonetic);
+    // Update bubble with full result object
+    updateBubbleContent(word, result, "", "", result.phonetic);
 }
 
 function createBubbleElement() {
@@ -303,13 +324,20 @@ function showBubble(original, translation, isLoading = false, context = "", cont
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
 
+    const bubbleWidth = 340; // Defined in CSS
+    const center = rect.left + (rect.width / 2);
+    let left = center - (bubbleWidth / 2) + window.scrollX;
+
+    // Boundary Checks
+    if (left < 10) left = 10;
+    if (left + bubbleWidth > window.innerWidth) {
+        left = window.innerWidth - bubbleWidth - 20;
+    }
+
     const top = rect.bottom + window.scrollY + 10;
-    const left = rect.left + window.scrollX;
 
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;
-
-    renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
 
     renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
 
@@ -331,110 +359,184 @@ function showBubbleAt(x, y, original, translation, isLoading = false, context = 
     document.addEventListener('mousedown', closeBubbleOutside);
 }
 
-function showSavedWordBubble(e, wordObj) {
+async function showSavedWordBubble(e, wordObj) {
     const host = createBubbleElement();
-
     const top = e.pageY + 10;
     const left = e.pageX;
 
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;
 
-    // SVG Icons
-    const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success-color)"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-    const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
-    const medalIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5h4l-2-5z"></path><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.11"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    // 1. Show dynamic loading state using existing renderer
+    renderBubbleSetup(host, wordObj.original, "Updating...", true, wordObj.context, "", wordObj.phonetic);
+    document.addEventListener('mousedown', closeBubbleOutside);
 
-    // Phonetic HTML
-    let phoneticHtml = "";
-    if (wordObj.phonetic) {
-        phoneticHtml = `<span style="font-size:13px; color:#64748b; margin-left:8px; font-family:monospace;">[${wordObj.phonetic}]</span>`;
-    }
+    // 2. Fetch fresh rich data from backend (ECDICT)
+    const stored = await chrome.storage.local.get('settings');
+    const targetLang = stored.settings?.targetLanguage || 'en';
+    const richData = await translateText(wordObj.original, targetLang);
+
+    // 3. Render final bubble with rich data
+    renderSavedBubbleRich(host, wordObj, richData);
+}
+
+function renderSavedBubbleRich(host, wordObj, richData) {
+    const original = wordObj.original;
+    const isRichData = typeof richData === 'object' && richData !== null;
+    const meanings = isRichData ? (richData.meanings || []) : [];
+    const phoneticText = isRichData ? (richData.phonetic || wordObj.phonetic) : wordObj.phonetic;
+    const audioUrl = isRichData ? richData.audio_url : null;
+
+    // Icons
+    const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+    const heartFilled = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
+    // Checkbox Icons
+    const squareIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`;
+    const checkSquareIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`;
 
     const isMastered = wordObj.learned === true;
     const masterColor = isMastered ? "var(--success-color)" : "#94a3b8";
-    const masterTitle = isMastered ? "Mastered" : "Mark as Mastered";
+    const statusIcon = isMastered ? checkSquareIcon : squareIcon;
+
+    // ... (rest of the renderSavedBubbleRich content)
+
+
+    // Phonetic HTML
+    let phoneticHtml = "";
+    if (phoneticText) {
+        const audioBtn = audioUrl ?
+            `<button class="lingua-btn-audio" style="background:none; border:none; cursor:pointer; padding:4px; margin-left:8px; color:var(--primary-color); display:inline-flex; align-items:center; border-radius:50%;" id="lingua-audio-btn">${volumeIcon}</button>` :
+            `<button class="lingua-btn-tts" style="background:none; border:none; cursor:pointer; padding:4px; margin-left:8px; color:#94a3b8; display:inline-flex; align-items:center; border-radius:50%;" id="lingua-speak-btn">${volumeIcon}</button>`;
+
+        phoneticHtml = `<div style="display:flex; align-items:center; margin-top:4px;"><span style="font-size:14px; color:#64748b; font-family:monospace;">${phoneticText}</span>${audioBtn}</div>`;
+    }
+
+    // Meanings HTML
+    let meaningsHtml = "";
+    if (meanings && meanings.length > 0) {
+        const posColors = { 'n.': '#8B5CF6', 'v.': '#3B82F6', 'adj.': '#10B981', 'adv.': '#F59E0B', 'conj.': '#EF4444', 'web.': '#6366F1', 'general': '#64748B' };
+        meaningsHtml = meanings.map(meaning => {
+            const pos = meaning.partOfSpeech || 'general';
+            const color = posColors[pos] || posColors['general'];
+            const defs = meaning.definitions || [];
+            const defsHtml = defs.map(d => `<div style="margin-bottom:4px; line-height:1.5;">${d.definition}</div>`).join('');
+            return `<div style="margin-bottom:8px; display:flex; align-items:flex-start; gap:10px;"><span style="display:inline-block; background:${color}15; color:${color}; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; flex-shrink:0; margin-top:2px;">${pos}</span><div style="font-size:15px; color:#1e293b; font-weight:500; line-height:1.5;">${defsHtml}</div></div>`;
+        }).join('');
+    } else {
+        meaningsHtml = `<div class="bubble-translation" style="color:var(--primary-color); font-size:18px; font-weight:500;">${wordObj.translation}</div>`;
+    }
 
     host.innerHTML = `
         <div class="bubble-content">
-            <div class="bubble-header">
-                <div>
-                     <span class="bubble-word">${wordObj.original}</span>
+            <div class="bubble-header" style="border-bottom:none; margin-bottom:0;">
+                <div style="flex-grow:1;">
+                     <span class="bubble-word" style="font-size:20px; font-weight:700;">${original}</span>
                      ${phoneticHtml}
                 </div>
-                <div style="display:flex; gap:4px;">
-                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: ${masterColor};" id="lingua-master-btn" title="${masterTitle}">${medalIcon}</button>
-                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: var(--primary-color);" id="lingua-speak-btn">${volumeIcon}</button>
-                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
+                <div style="display:flex; gap:4px; align-items:flex-start;">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${masterColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-master-btn" title="Mark as Mastered">
+                        ${statusIcon}
+                     </button>
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-unsave-btn" title="Already Saved">
+                        ${heartFilled}
+                     </button>
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center;" id="lingua-close-btn" title="Close">
+                        ${closeIcon}
+                     </button>
                 </div>
             </div>
-            <div class="bubble-translation">${wordObj.translation}</div>
-            <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:4px;">
-                ${checkIcon} ${wordObj.learned ? 'Mastered' : 'Saved'}
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
+                ${meaningsHtml}
             </div>
+            ${wordObj.context ? `<div class="bubble-context" style="margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:13px; line-height:1.5; color:#94a3b8; font-style:italic;">${wordObj.context}</div>` : ""}
         </div>
     `;
 
-    // Bind events
-    host.querySelector('#lingua-speak-btn').onclick = () => {
-        const utterance = new SpeechSynthesisUtterance(wordObj.original);
-        speechSynthesis.speak(utterance);
+    // Events
+    const audioBtn = host.querySelector('#lingua-audio-btn');
+    if (audioBtn) audioBtn.onclick = () => { new Audio(audioUrl).play(); };
+
+    const ttsBtn = host.querySelector('#lingua-speak-btn');
+    if (ttsBtn) ttsBtn.onclick = () => { speechSynthesis.speak(new SpeechSynthesisUtterance(original)); };
+
+    const unsaveBtn = host.querySelector('#lingua-unsave-btn');
+    unsaveBtn.onclick = async () => {
+        if (confirm(`Remove "${original}" from Wordbook?`)) {
+            if (typeof api !== 'undefined') {
+                const success = await api.deleteWord(wordObj.id);
+                if (success) {
+                    closeBubble();
+                    // Local cleanup
+                    savedWords = savedWords.filter(w => w.id !== wordObj.id);
+                    removeHighlights();
+                    applyHighlights(document.body);
+                }
+            }
+        }
     };
 
     host.querySelector('#lingua-master-btn').onclick = async (e) => {
         const newLearned = !wordObj.learned;
         const btn = e.currentTarget;
+        btn.innerHTML = newLearned ? checkSquareIcon : squareIcon;
         btn.style.color = newLearned ? "var(--success-color)" : "#94a3b8";
+        btn.style.transform = "scale(1.2)";
+        setTimeout(() => btn.style.transform = "scale(1)", 200);
 
-        // Update local and remote
         if (typeof api !== 'undefined') {
-            api.updateWord(wordObj.id, { learned: newLearned }).then(success => {
-                if (success) {
-                    wordObj.learned = newLearned;
-
-                    // Update the bottom indicator text
-                    const indicator = host.querySelector('.bubble-content > div:last-child');
-                    if (indicator) {
-                        indicator.innerHTML = `${checkIcon} ${newLearned ? 'Mastered' : 'Saved'}`;
+            const success = await api.updateWord(wordObj.id, { learned: newLearned });
+            if (success) {
+                wordObj.learned = newLearned;
+                // Update local storage vocabulary
+                chrome.storage.local.get(['vocabulary'], (data) => {
+                    const vocab = data.vocabulary || [];
+                    const idx = vocab.findIndex(v => v.id === wordObj.id);
+                    if (idx !== -1) {
+                        vocab[idx].learned = newLearned;
+                        chrome.storage.local.set({ vocabulary: vocab });
                     }
-
-                    // Update storage
-                    chrome.storage.local.get(['vocabulary'], (data) => {
-                        const vocab = data.vocabulary || [];
-                        const index = vocab.findIndex(v => v.id === wordObj.id);
-                        if (index !== -1) {
-                            vocab[index].learned = newLearned;
-                            chrome.storage.local.set({ vocabulary: vocab });
-                        }
-                    });
-                }
-            });
+                });
+            }
         }
     };
 
     host.querySelector('#lingua-close-btn').onclick = closeBubble;
-    document.addEventListener('mousedown', closeBubbleOutside);
+
+    // Enable dragging
+    makeBubbleDraggable(host);
 }
 
-function renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic) {
-    const btnText = isLoading ? "..." : "Save";
+function renderBubbleSetup(host, original, translationData, isLoading, context, contextTranslation, phonetic) {
+    // translationData can be either a string (old format) or an object (new format with meanings)
+    const isRichData = typeof translationData === 'object' && translationData !== null;
+    const simpleTranslation = isRichData ? (translationData.translation || original) : translationData;
+    const meanings = isRichData ? (translationData.meanings || []) : [];
+    const audioUrl = isRichData ? translationData.audio_url : null;
+    const phoneticText = isRichData ? (translationData.phonetic || phonetic) : phonetic;
+
+    // Check if word is already saved to determine initial icon state
+    const isSaved = savedWords.some(w => w.original.toLowerCase() === original.toLowerCase());
+
     const btnDisabled = isLoading ? "disabled" : "";
 
     // SVG Icons
-    const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-    const saveIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`;
-    const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-    const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+    const closeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+    const volumeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+
+    // Heart Icons
+    const heartOutline = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+    const heartFilled = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
+    const saveIcon = isSaved ? heartFilled : heartOutline;
+    const saveColor = isSaved ? "#ef4444" : "#94a3b8";
 
     // Context HTML
     let contextHtml = "";
     if (context && !isLoading) {
-        // Show Translated Context
-        // And original context in smaller/muted text
         const regex = new RegExp(`(${escapeRegExp(original)})`, 'gi');
         const highlightedOrig = context.replace(regex, '<span style="color:var(--primary-color); font-weight:700;">$1</span>');
-
         const translatedBlock = contextTranslation ? `<div style="margin-top:8px; color:#334155; font-weight:500;">${contextTranslation}</div>` : "";
 
         contextHtml = `
@@ -447,62 +549,116 @@ function renderBubbleSetup(host, original, translation, isLoading, context, cont
 
     // Phonetic HTML
     let phoneticHtml = "";
-    if (phonetic) {
-        phoneticHtml = `<span style="font-size:13px; color:#64748b; margin-left:8px; font-family:monospace;">[${phonetic}]</span>`;
+    if (phoneticText) {
+        const audioBtn = audioUrl ?
+            `<button class="lingua-btn-audio" style="background:none; border:none; cursor:pointer; padding:4px; margin-left:8px; color:var(--primary-color); display:inline-flex; align-items:center; border-radius:50%; transition:background 0.2s;" id="lingua-audio-btn" title="Play pronunciation">${volumeIcon}</button>` :
+            `<button class="lingua-btn-tts" style="background:none; border:none; cursor:pointer; padding:4px; margin-left:8px; color:#94a3b8; display:inline-flex; align-items:center; border-radius:50%; transition:background 0.2s;" id="lingua-speak-btn" title="Text-to-speech">${volumeIcon}</button>`;
+
+        phoneticHtml = `
+            <div style="display:flex; align-items:center; margin-top:4px;">
+                <span style="font-size:14px; color:#64748b; font-family:monospace;">${phoneticText}</span>
+                ${audioBtn}
+            </div>
+        `;
+    }
+
+    // Meanings HTML
+    let meaningsHtml = "";
+    if (meanings && meanings.length > 0) {
+        const posColors = {
+            'n.': '#8B5CF6', 'v.': '#3B82F6', 'adj.': '#10B981', 'adv.': '#F59E0B', 'conj.': '#EF4444', 'web.': '#6366F1', 'general': '#64748B'
+        };
+
+        meaningsHtml = meanings.map(meaning => {
+            const pos = meaning.partOfSpeech || 'general';
+            const color = posColors[pos] || posColors['general'];
+            const definitions = meaning.definitions || [];
+            const defsHtml = definitions.map(def => `<div style="margin-bottom:4px; line-height:1.5;">${def.definition}</div>`).join('');
+
+            return `
+                <div style="margin-bottom:8px; display:flex; align-items:flex-start; gap:10px;">
+                    <span style="display:inline-block; background:${color}15; color:${color}; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; flex-shrink:0; margin-top:2px;">${pos}</span>
+                    <div style="font-size:15px; color:#1e293b; font-weight:500; line-height:1.5;">
+                        ${defsHtml}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        meaningsHtml = `<div class="bubble-translation" style="color:var(--primary-color); font-size:18px; font-weight:500; line-height:1.4;">${simpleTranslation}</div>`;
     }
 
     host.innerHTML = `
         <div class="bubble-content">
-            <div class="bubble-header">
-                <div>
-                     <span class="bubble-word">${original}</span>
+            <div class="bubble-header" style="border-bottom:none; margin-bottom:0;">
+                <div style="flex-grow:1;">
+                     <span class="bubble-word" style="font-size:20px; font-weight:700;">${original}</span>
                      ${phoneticHtml}
                 </div>
-                <div style="display:flex; gap:4px;">
-                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: var(--primary-color);" id="lingua-speak-btn">${volumeIcon}</button>
-                     <button class="lingua-btn lingua-btn-secondary" style="padding: 4px; border-radius: 50%; width: 24px; height: 24px; min-width: unset; box-shadow: none; border: none; background: transparent; color: #94a3b8;" id="lingua-close-btn">${closeIcon}</button>
+                <div style="display:flex; gap:8px; align-items:flex-start;">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${saveColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-save-icon-btn" title="Save to Wordbook" ${btnDisabled}>
+                        ${isLoading ? '<span style="font-size:12px">...</span>' : saveIcon}
+                     </button>
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-close-btn" title="Close">
+                        ${closeIcon}
+                     </button>
                 </div>
             </div>
-            <div class="bubble-translation">${translation}</div>
-            ${contextHtml}
-            <div class="bubble-actions" style="margin-top:12px;">
-                <button id="lingua-save-btn" class="lingua-btn" ${btnDisabled}>
-                   ${isLoading ? '' : saveIcon} <span>${btnText}</span>
-                </button>
+            <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
+                ${meaningsHtml}
             </div>
+            ${contextHtml}
         </div>
     `;
 
     // Bind events
     if (!isLoading) {
-        // Speak Button
-        host.querySelector('#lingua-speak-btn').onclick = () => {
-            const utterance = new SpeechSynthesisUtterance(original);
-            speechSynthesis.speak(utterance);
-        };
+        const audioBtn = host.querySelector('#lingua-audio-btn');
+        if (audioBtn && audioUrl) {
+            audioBtn.onclick = () => {
+                const audio = new Audio(audioUrl);
+                audio.play().catch(err => console.error('Audio playback failed:', err));
+            };
+        }
+        const ttsBtn = host.querySelector('#lingua-speak-btn');
+        if (ttsBtn) {
+            ttsBtn.onclick = () => {
+                const utterance = new SpeechSynthesisUtterance(original);
+                speechSynthesis.speak(utterance);
+            };
+        }
 
-        const saveBtn = host.querySelector('#lingua-save-btn');
-        saveBtn.onclick = async () => {
-            saveBtn.innerHTML = `<span>Saving...</span>`;
+        const saveBtn = host.querySelector('#lingua-save-icon-btn');
+        if (saveBtn) {
+            saveBtn.onclick = async () => {
+                if (isSaved) return; // Prevent multiple saves for now
 
-            const finalContext = context || window.location.href;
+                saveBtn.innerHTML = heartFilled;
+                saveBtn.style.color = "#ef4444";
+                saveBtn.style.transform = "scale(1.2)";
+                setTimeout(() => saveBtn.style.transform = "scale(1)", 200);
 
-            const savedWord = await saveWord(original, translation, finalContext, window.location.href, phonetic);
-            if (savedWord) {
-                saveBtn.innerHTML = `${checkIcon} <span>Saved</span>`;
-                saveBtn.style.backgroundColor = "var(--success-color)";
+                const finalContext = context || window.location.href;
+                const savedWord = await saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
 
-                // Refresh highlights
-                savedWords.push(savedWord);
-                applyHighlights(document.body);
-            } else {
-                saveBtn.innerHTML = `<span>Saved</span>`;
-                saveBtn.style.backgroundColor = "var(--text-muted)";
-            }
-        };
+                if (savedWord) {
+                    savedWords.push(savedWord);
+                    applyHighlights(document.body);
+                } else {
+                    saveBtn.innerHTML = heartOutline;
+                    saveBtn.style.color = "#94a3b8";
+                }
+            };
+        }
     }
 
-    host.querySelector('#lingua-close-btn').onclick = closeBubble;
+    const closeBtn = host.querySelector('#lingua-close-btn');
+    if (closeBtn) closeBtn.onclick = closeBubble;
+
+    // Enable dragging
+    makeBubbleDraggable(host);
+
+    document.addEventListener('mousedown', closeBubbleOutside);
 }
 
 function updateBubbleContent(original, translation, context, contextTranslation, phonetic) {
@@ -657,3 +813,100 @@ const ImmersionTranslator = {
         }
     }
 };
+
+// --- Selection Trigger Logic ---
+let triggerIcon = null;
+
+function showTriggerIcon(x, y, text) {
+    if (!triggerIcon) {
+        triggerIcon = document.createElement('div');
+        triggerIcon.className = 'lingua-trigger-icon';
+        // Icon: A stylized 'A' or Translate symbol
+        triggerIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>`;
+        document.body.appendChild(triggerIcon);
+
+        // Prevent hiding when clicking on the icon itself
+        triggerIcon.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+    }
+
+    triggerIcon.style.left = `${x}px`;
+    triggerIcon.style.top = `${y}px`;
+    triggerIcon.style.display = 'flex';
+
+    // Set up the click handler for the current selection
+    triggerIcon.onclick = (e) => {
+        e.stopPropagation();
+        hideTriggerIcon();
+        handleTranslateSelection(text);
+    };
+}
+
+function hideTriggerIcon() {
+    if (triggerIcon) {
+        triggerIcon.style.display = 'none';
+    }
+}
+
+// --- Bubble Drag Functionality ---
+function makeBubbleDraggable(host) {
+    const header = host.querySelector('.bubble-header');
+    if (!header) return;
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    header.addEventListener('mousedown', (e) => {
+        // Don't start drag if clicking on buttons
+        if (e.target.closest('button')) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        // Get current position
+        const rect = host.getBoundingClientRect();
+        initialLeft = rect.left + window.scrollX;
+        initialTop = rect.top + window.scrollY;
+
+        // Visual feedback
+        host.classList.add('bubble-dragging');
+
+        e.preventDefault(); // Prevent text selection
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        let newLeft = initialLeft + deltaX;
+        let newTop = initialTop + deltaY;
+
+        // Boundary checks
+        const bubbleRect = host.getBoundingClientRect();
+        const maxLeft = window.innerWidth - bubbleRect.width - 10;
+        const maxTop = window.innerHeight + window.scrollY - bubbleRect.height - 10;
+
+        if (newLeft < 10) newLeft = 10;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+        if (newTop < window.scrollY + 10) newTop = window.scrollY + 10;
+        if (newTop > maxTop) newTop = maxTop;
+
+        host.style.left = `${newLeft}px`;
+        host.style.top = `${newTop}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            host.classList.remove('bubble-dragging');
+        }
+    });
+}
