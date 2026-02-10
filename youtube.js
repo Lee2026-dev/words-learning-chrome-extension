@@ -5,6 +5,8 @@
     let observer = null;
     let overlay = null;
     let isEnabled = true;
+    let currentTranslationAbort = null;
+    let translationRequestId = 0;
 
     // Initialize
     (async function init() {
@@ -50,8 +52,8 @@
         // Hide native captions to avoid duplicate English subtitles
         captionContainer.classList.add('lingua-hidden-native');
 
-        // Debounce the update to prevent rapid flickering as YouTube builds the sentence part-by-part
-        const debouncedUpdateOverlay = debounce(updateOverlay, 50); // Reduced from 100ms to 50ms for faster response
+        // Debounce the update to wait for YouTube to finish building the complete subtitle
+        const debouncedUpdateOverlay = debounce(updateOverlay, 500);
 
         observer = new MutationObserver((mutations) => {
             debouncedUpdateOverlay(captionContainer);
@@ -60,7 +62,6 @@
         observer.observe(captionContainer, {
             childList: true,
             subtree: true,
-            attributes: true,
             characterData: true
         });
 
@@ -104,6 +105,8 @@
         player.appendChild(overlay);
     }
 
+    let clearTimer = null;
+
     function updateOverlay(sourceContainer) {
         if (!overlay) return;
 
@@ -112,11 +115,21 @@
         const segments = sourceContainer.querySelectorAll('.ytp-caption-segment');
 
         if (segments.length === 0) {
-            // Do not clear immediately if empty, might be momentary flicker?
-            // But if genuinely empty, we should clear.
-            // Let's rely on standard current logic but maybe check if change is significant.
-            overlay.innerHTML = '';
+            // Don't clear immediately — YouTube may be transitioning between subtitles
+            if (!clearTimer) {
+                clearTimer = setTimeout(() => {
+                    renderOverlay('', '');
+                    lastOriginalText = "";
+                    lastTranslatedText = "";
+                }, 300);
+            }
             return;
+        }
+
+        // Cancel pending clear if new content arrived
+        if (clearTimer) {
+            clearTimeout(clearTimer);
+            clearTimer = null;
         }
 
         // Collect all text
@@ -128,7 +141,6 @@
         fullText = fullText.replace(/\s+/g, ' ');
 
         if (!fullText) {
-            overlay.innerHTML = '';
             return;
         }
 
@@ -138,6 +150,7 @@
         }
 
         // Trigger full sentence translation
+
         translateSubtitle(fullText);
     }
 
@@ -170,24 +183,23 @@
     async function translateSubtitle(text) {
         if (text === lastOriginalText && lastTranslatedText) {
             // Just re-render if we have it (in case DOM was cleared)
-            if (overlay) {
-                overlay.innerHTML = `
-                <div class="lingua-yt-original">${lastOriginalText}</div>
-                <div class="lingua-yt-translation">${lastTranslatedText}</div>
-            `;
-            }
+            renderOverlay(lastOriginalText, lastTranslatedText);
             return;
+        }
+
+        // Cancel any in-flight translation to prevent race conditions
+        if (currentTranslationAbort) {
+            currentTranslationAbort.abort();
         }
 
         lastOriginalText = text;
 
-        // Show loading state with original text
-        if (overlay) {
-            overlay.innerHTML = `
-            <div class="lingua-yt-original">${text}</div>
-            <div class="lingua-yt-translation">...</div>
-        `;
-        }
+        // Generate unique request ID for this translation
+        const requestId = ++translationRequestId;
+
+        // Show original text immediately with previous translation (no "..." flicker)
+        // This keeps the old translation visible until the new one arrives
+        renderOverlay(text, lastTranslatedText || '翻译中...');
 
         // Get Target Lang
         let targetLang = 'zh';
@@ -200,14 +212,47 @@
 
         // Use Google Translate directly for YouTube subtitles (faster)
         const translation = await translateTextGoogle(text, targetLang);
-        lastTranslatedText = translation;
 
-        // Update UI with bilingual subtitles
-        if (overlay) {
-            overlay.innerHTML = `
-            <div class="lingua-yt-original">${text}</div>
-            <div class="lingua-yt-translation">${translation}</div>
-        `;
+        // Only apply this translation if it's still the latest request
+        // (prevents old translations from overwriting newer ones)
+        if (requestId === translationRequestId) {
+            lastTranslatedText = translation;
+            // Update UI with bilingual subtitles
+            renderOverlay(text, translation);
+        }
+    }
+
+    // Helper function to render overlay with incremental DOM updates (no innerHTML)
+    function renderOverlay(originalText, translationText) {
+        if (!overlay) return;
+
+        let origDiv = overlay.querySelector('.lingua-yt-original');
+        let transDiv = overlay.querySelector('.lingua-yt-translation');
+
+        // Create elements if they don't exist
+        if (!origDiv) {
+            origDiv = document.createElement('div');
+            origDiv.className = 'lingua-yt-original';
+            overlay.appendChild(origDiv);
+        }
+        if (!transDiv) {
+            transDiv = document.createElement('div');
+            transDiv.className = 'lingua-yt-translation';
+            overlay.appendChild(transDiv);
+        }
+
+        // Only update textContent if it actually changed (prevents unnecessary reflows)
+        if (origDiv.textContent !== originalText) {
+            origDiv.textContent = originalText;
+        }
+        if (transDiv.textContent !== translationText) {
+            transDiv.textContent = translationText;
+        }
+
+        // If both are empty, remove the elements
+        if (!originalText && !translationText) {
+            origDiv.remove();
+            transDiv.remove();
         }
     }
 

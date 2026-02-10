@@ -62,9 +62,19 @@ function startObserver() {
     observer = new MutationObserver((mutations) => {
         let shouldHighlight = false;
         for (const mutation of mutations) {
+            // Skip mutations from our own YouTube overlay to prevent feedback loop
+            if (mutation.target.closest && mutation.target.closest('#lingua-yt-captions')) {
+                continue;
+            }
+
             if (mutation.addedNodes.length > 0) {
                 // Check if any added node is a relevant element or text node
                 for (let node of mutation.addedNodes) {
+                    // Skip if node is inside YouTube overlay
+                    if (node.nodeType === 1 && node.closest && node.closest('#lingua-yt-captions')) {
+                        continue;
+                    }
+
                     if (node.nodeType === 1 || node.nodeType === 3) {
                         shouldHighlight = true;
                         break;
