@@ -116,23 +116,133 @@ async function syncVocabulary() {
 }
 
 /**
- * Save a word to the backend.
+ * Save a word — LOCAL FIRST, then sync to backend async.
+ * Returns the word object immediately (with a temporary local ID).
  */
-async function saveWord(original, translation, context, url, phonetic) {
-    try {
-        if (typeof api !== 'undefined') {
-            const savedWord = await api.saveWord(original, translation, context, url, phonetic);
-            if (savedWord) {
-                // Background sync to ensure local storage is up to date
-                syncVocabulary();
-                return savedWord;
-            }
+function saveWord(original, translation, context, url, phonetic) {
+    // 1. Create word object with temporary local ID
+    const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const wordObj = {
+        id: tempId,
+        original,
+        translation,
+        phonetic: phonetic || '',
+        context: context || '',
+        url: url || '',
+        timestamp: Date.now() / 1000,
+        learned: false,
+        _pendingSync: true // Flag: not yet confirmed by backend
+    };
+
+    // 2. Save to local storage immediately
+    chrome.storage.local.get(['vocabulary'], (data) => {
+        const vocab = data.vocabulary || [];
+        // Avoid duplicates
+        if (!vocab.some(w => w.original && w.original.toLowerCase() === original.toLowerCase())) {
+            vocab.push(wordObj);
+            chrome.storage.local.set({ vocabulary: vocab });
         }
-        return null;
-    } catch (error) {
-        console.error("Utils SaveWord Error:", error);
-        return null;
+    });
+
+    // 3. Fire backend API async (don't await)
+    if (typeof api !== 'undefined') {
+        api.saveWord(original, translation, context, url, phonetic).then(backendWord => {
+            if (backendWord && backendWord.id) {
+                // Replace temp entry with real backend entry in local storage
+                chrome.storage.local.get(['vocabulary'], (data) => {
+                    const vocab = data.vocabulary || [];
+                    const idx = vocab.findIndex(w => w.id === tempId);
+                    if (idx !== -1) {
+                        vocab[idx] = { ...backendWord, _pendingSync: false };
+                    }
+                    chrome.storage.local.set({ vocabulary: vocab });
+                });
+                // Also update in-memory savedWords if it exists in content.js scope
+                if (typeof savedWords !== 'undefined') {
+                    const memIdx = savedWords.findIndex(w => w.id === tempId);
+                    if (memIdx !== -1) {
+                        savedWords[memIdx] = { ...backendWord, _pendingSync: false };
+                    }
+                }
+                console.log(`Word "${original}" synced to backend (id: ${backendWord.id})`);
+            }
+        }).catch(err => {
+            console.error(`Background save failed for "${original}":`, err);
+        });
     }
+
+    // 4. Return immediately with local object
+    return wordObj;
+}
+
+/**
+ * Update a word locally first, then sync to backend async.
+ * @param {string} wordId - The word's ID (can be temp or real)
+ * @param {Object} updates - Fields to update, e.g. { learned: true }
+ * @returns {boolean} true (always succeeds locally)
+ */
+function updateWordLocal(wordId, updates) {
+    // 1. Update local storage immediately
+    chrome.storage.local.get(['vocabulary'], (data) => {
+        const vocab = data.vocabulary || [];
+        const idx = vocab.findIndex(v => v.id === wordId);
+        if (idx !== -1) {
+            Object.assign(vocab[idx], updates);
+            chrome.storage.local.set({ vocabulary: vocab });
+        }
+    });
+
+    // 2. Update in-memory savedWords if available
+    if (typeof savedWords !== 'undefined') {
+        const memWord = savedWords.find(w => w.id === wordId);
+        if (memWord) {
+            Object.assign(memWord, updates);
+        }
+    }
+
+    // 3. Fire backend async (skip for temp IDs that haven't synced yet)
+    if (typeof api !== 'undefined' && wordId && !wordId.startsWith('local_')) {
+        api.updateWord(wordId, updates).then(success => {
+            if (!success) {
+                console.warn(`Backend update failed for word ${wordId}, local state may be ahead.`);
+            }
+        }).catch(err => {
+            console.error(`Background update failed for word ${wordId}:`, err);
+        });
+    }
+
+    return true;
+}
+
+/**
+ * Delete a word locally first, then sync to backend async.
+ * @param {string} wordId - The word's ID
+ * @returns {boolean} true (always succeeds locally)
+ */
+function deleteWordLocal(wordId) {
+    // 1. Remove from local storage immediately
+    chrome.storage.local.get(['vocabulary'], (data) => {
+        const vocab = data.vocabulary || [];
+        const filtered = vocab.filter(w => w.id !== wordId);
+        chrome.storage.local.set({ vocabulary: filtered });
+    });
+
+    // 2. Remove from in-memory savedWords if available
+    if (typeof savedWords !== 'undefined') {
+        const idx = savedWords.findIndex(w => w.id === wordId);
+        if (idx !== -1) {
+            savedWords.splice(idx, 1);
+        }
+    }
+
+    // 3. Fire backend async
+    if (typeof api !== 'undefined' && wordId && !wordId.startsWith('local_')) {
+        api.deleteWord(wordId).catch(err => {
+            console.error(`Background delete failed for word ${wordId}:`, err);
+        });
+    }
+
+    return true;
 }
 
 /**

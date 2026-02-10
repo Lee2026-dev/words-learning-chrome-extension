@@ -401,8 +401,7 @@ function showBubble(original, translation, isLoading = false, context = "", cont
     host.style.left = `${left}px`;
 
     renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
-
-    document.addEventListener('mousedown', closeBubbleOutside);
+    // Note: closeBubbleOutside listener is registered inside renderBubbleSetup
 }
 
 function showBubbleAt(x, y, original, translation, isLoading = false, context = "", contextTranslation = "", phonetic = "") {
@@ -416,8 +415,7 @@ function showBubbleAt(x, y, original, translation, isLoading = false, context = 
     host.style.left = `${left}px`;
 
     renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
-
-    document.addEventListener('mousedown', closeBubbleOutside);
+    // Note: closeBubbleOutside listener is registered inside renderBubbleSetup
 }
 
 async function showSavedWordBubble(e, wordObj) {
@@ -430,7 +428,6 @@ async function showSavedWordBubble(e, wordObj) {
 
     // 1. Show dynamic loading state using existing renderer
     renderBubbleSetup(host, wordObj.original, "更新中...", true, wordObj.context, "", wordObj.phonetic);
-    document.addEventListener('mousedown', closeBubbleOutside);
 
     // 2. Fetch fresh rich data from backend (ECDICT)
     const stored = await chrome.storage.local.get('settings');
@@ -514,6 +511,11 @@ function renderSavedBubbleRich(host, wordObj, richData) {
         </div>
     `;
 
+    // Prevent button clicks from closing the bubble via closeBubbleOutside
+    host.querySelectorAll('.lingua-btn-icon, .lingua-btn-audio, .lingua-btn-tts').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => e.stopPropagation());
+    });
+
     // Events
     const audioBtn = host.querySelector('#lingua-audio-btn');
     if (audioBtn) audioBtn.onclick = () => { new Audio(audioUrl).play(); };
@@ -522,44 +524,27 @@ function renderSavedBubbleRich(host, wordObj, richData) {
     if (ttsBtn) ttsBtn.onclick = () => { speechSynthesis.speak(new SpeechSynthesisUtterance(original)); };
 
     const unsaveBtn = host.querySelector('#lingua-unsave-btn');
-    unsaveBtn.onclick = async () => {
+    unsaveBtn.onclick = () => {
         if (confirm(`确定要从生词本中移除 "${original}" 吗？`)) {
-            if (typeof api !== 'undefined') {
-                const success = await api.deleteWord(wordObj.id);
-                if (success) {
-                    closeBubble();
-                    // Local cleanup
-                    savedWords = savedWords.filter(w => w.id !== wordObj.id);
-                    removeHighlights();
-                    applyHighlights(document.body);
-                }
-            }
+            // Local-first: delete locally, sync to backend async
+            deleteWordLocal(wordObj.id);
+            closeBubble();
+            removeHighlights();
+            applyHighlights(document.body);
         }
     };
 
-    host.querySelector('#lingua-master-btn').onclick = async (e) => {
+    host.querySelector('#lingua-master-btn').onclick = (e) => {
         const newLearned = !wordObj.learned;
         const btn = e.currentTarget;
         btn.innerHTML = newLearned ? checkSquareIcon : squareIcon;
-        btn.style.color = newLearned ? "var(--success-color)" : "#94a3b8";
+        btn.style.color = newLearned ? "#10B981" : "#94a3b8";
         btn.style.transform = "scale(1.2)";
         setTimeout(() => btn.style.transform = "scale(1)", 200);
 
-        if (typeof api !== 'undefined') {
-            const success = await api.updateWord(wordObj.id, { learned: newLearned });
-            if (success) {
-                wordObj.learned = newLearned;
-                // Update local storage vocabulary
-                chrome.storage.local.get(['vocabulary'], (data) => {
-                    const vocab = data.vocabulary || [];
-                    const idx = vocab.findIndex(v => v.id === wordObj.id);
-                    if (idx !== -1) {
-                        vocab[idx].learned = newLearned;
-                        chrome.storage.local.set({ vocabulary: vocab });
-                    }
-                });
-            }
-        }
+        // Local-first: update locally, sync to backend async
+        wordObj.learned = newLearned;
+        updateWordLocal(wordObj.id, { learned: newLearned });
     };
 
     host.querySelector('#lingua-close-btn').onclick = closeBubble;
@@ -576,8 +561,9 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
     const audioUrl = isRichData ? translationData.audio_url : null;
     const phoneticText = isRichData ? (translationData.phonetic || phonetic) : phonetic;
 
-    // Check if word is already saved to determine initial icon state
-    const isSaved = savedWords.some(w => w.original.toLowerCase() === original.toLowerCase());
+    // Check if word is already saved — use a function so we always get fresh state
+    const checkIsSaved = () => savedWords.some(w => w.original && w.original.toLowerCase() === original.toLowerCase());
+    const isSaved = checkIsSaved();
 
     const btnDisabled = isLoading ? "disabled" : "";
 
@@ -591,6 +577,17 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
 
     const saveIcon = isSaved ? heartFilled : heartOutline;
     const saveColor = isSaved ? "#ef4444" : "#94a3b8";
+
+    // Checkbox Icons
+    const squareIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`;
+    const checkSquareIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>`;
+
+    // Find saved word object if exists
+    const findSavedWordObj = () => savedWords.find(w => w.original && w.original.toLowerCase() === original.toLowerCase());
+    const savedWordObj = findSavedWordObj();
+    const isMastered = savedWordObj && savedWordObj.learned === true;
+    const masterIcon = isMastered ? checkSquareIcon : squareIcon;
+    const masterColor = isMastered ? "#10B981" : "#94a3b8";
 
     // Context HTML - Removed as per request
     let contextHtml = "";
@@ -644,6 +641,9 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
                      ${phoneticHtml}
                 </div>
                 <div style="display:flex; gap:8px; align-items:flex-start;">
+                     <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${masterColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-master-btn" title="Mark as Mastered" ${btnDisabled}>
+                        ${isLoading ? '' : masterIcon}
+                     </button>
                      <button class="lingua-btn-icon" style="padding:6px; border-radius:50%; width:32px; height:32px; border:none; background:transparent; color:${saveColor}; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;" id="lingua-save-icon-btn" title="Save to Wordbook" ${btnDisabled}>
                         ${isLoading ? '<span style="font-size:12px">...</span>' : saveIcon}
                      </button>
@@ -657,6 +657,11 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
             </div>
         </div>
     `;
+
+    // Prevent button clicks from closing the bubble via closeBubbleOutside
+    host.querySelectorAll('.lingua-btn-icon, .lingua-btn-audio, .lingua-btn-tts').forEach(btn => {
+        btn.addEventListener('mousedown', (e) => e.stopPropagation());
+    });
 
     // Bind events
     if (!isLoading) {
@@ -676,25 +681,75 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
         }
 
         const saveBtn = host.querySelector('#lingua-save-icon-btn');
-        if (saveBtn) {
-            saveBtn.onclick = async () => {
-                if (isSaved) return; // Prevent multiple saves for now
+        const masterBtn = host.querySelector('#lingua-master-btn');
 
-                saveBtn.innerHTML = heartFilled;
-                saveBtn.style.color = "#ef4444";
+        // Helper to update button visual state
+        const updateMasterBtn = (isLearned) => {
+            if (masterBtn) {
+                masterBtn.innerHTML = isLearned ? checkSquareIcon : squareIcon;
+                masterBtn.style.color = isLearned ? "#10B981" : "#94a3b8";
+            }
+        };
+
+        if (saveBtn) {
+            saveBtn.onclick = () => {
                 saveBtn.style.transform = "scale(1.2)";
                 setTimeout(() => saveBtn.style.transform = "scale(1)", 200);
 
-                const finalContext = context || window.location.href;
-                const savedWord = await saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
-
-                if (savedWord) {
-                    savedWords.push(savedWord);
-                    applyHighlights(document.body);
-                } else {
+                if (checkIsSaved()) {
+                    // UNSAVE: word is already saved, remove it
+                    const existingWord = findSavedWordObj();
+                    if (existingWord) {
+                        deleteWordLocal(existingWord.id);
+                        removeHighlights();
+                        applyHighlights(document.body);
+                    }
                     saveBtn.innerHTML = heartOutline;
                     saveBtn.style.color = "#94a3b8";
+                    // Also reset master button
+                    updateMasterBtn(false);
+                } else {
+                    // SAVE: word is not saved yet
+                    saveBtn.innerHTML = heartFilled;
+                    saveBtn.style.color = "#ef4444";
+
+                    const finalContext = context || window.location.href;
+                    const savedWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
+                    savedWords.push(savedWord);
+                    applyHighlights(document.body);
                 }
+            };
+        }
+
+        if (masterBtn) {
+            masterBtn.onclick = () => {
+                // If not saved, save first — use fresh lookup
+                let currentWord = findSavedWordObj();
+
+                if (!currentWord) {
+                    // Local-first save
+                    const finalContext = context || window.location.href;
+                    currentWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
+                    savedWords.push(currentWord);
+                    applyHighlights(document.body);
+                    // Update save icon too
+                    if (saveBtn) {
+                        saveBtn.innerHTML = heartFilled;
+                        saveBtn.style.color = "#ef4444";
+                    }
+                }
+
+                // Toggle learned status
+                const newLearned = !currentWord.learned;
+                currentWord.learned = newLearned;
+                updateMasterBtn(newLearned);
+
+                // Animation
+                masterBtn.style.transform = "scale(1.2)";
+                setTimeout(() => masterBtn.style.transform = "scale(1)", 200);
+
+                // Local-first: update locally, sync to backend async
+                updateWordLocal(currentWord.id, { learned: newLearned });
             };
         }
     }
@@ -705,6 +760,8 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
     // Enable dragging
     makeBubbleDraggable(host);
 
+    // Remove any existing listener before adding to prevent duplicates
+    document.removeEventListener('mousedown', closeBubbleOutside);
     document.addEventListener('mousedown', closeBubbleOutside);
 }
 
