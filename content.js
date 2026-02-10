@@ -523,16 +523,53 @@ function renderSavedBubbleRich(host, wordObj, richData) {
     const ttsBtn = host.querySelector('#lingua-speak-btn');
     if (ttsBtn) ttsBtn.onclick = () => { speechSynthesis.speak(new SpeechSynthesisUtterance(original)); };
 
+    const heartOutline = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
+
     const unsaveBtn = host.querySelector('#lingua-unsave-btn');
-    unsaveBtn.onclick = () => {
-        if (confirm(`确定要从生词本中移除 "${original}" 吗？`)) {
-            // Local-first: delete locally, sync to backend async
+    let isSavedState = true; // Start as saved (this is the "saved word" bubble)
+
+    function toggleSaveState() {
+        // Animation
+        unsaveBtn.style.transform = "scale(1.2)";
+        setTimeout(() => unsaveBtn.style.transform = "scale(1)", 200);
+
+        if (isSavedState) {
+            // UNSAVE: remove the word
             deleteWordLocal(wordObj.id);
-            closeBubble();
             removeHighlights();
             applyHighlights(document.body);
+
+            // Update UI to "unsaved"
+            unsaveBtn.innerHTML = heartOutline;
+            unsaveBtn.style.color = "#94a3b8";
+            unsaveBtn.title = "保存到生词本";
+
+            // Reset master button
+            const masterBtn = host.querySelector('#lingua-master-btn');
+            if (masterBtn) {
+                masterBtn.innerHTML = squareIcon;
+                masterBtn.style.color = "#94a3b8";
+                wordObj.learned = false;
+            }
+        } else {
+            // RE-SAVE: save the word again
+            const finalContext = wordObj.context || window.location.href;
+            const newWord = saveWord(wordObj.original, wordObj.translation, finalContext, wordObj.url || window.location.href, wordObj.phonetic);
+            savedWords.push(newWord);
+            // Update wordObj.id to the new ID so future operations work
+            wordObj.id = newWord.id;
+            applyHighlights(document.body);
+
+            // Update UI to "saved"
+            unsaveBtn.innerHTML = heartFilled;
+            unsaveBtn.style.color = "#ef4444";
+            unsaveBtn.title = "已收藏";
         }
-    };
+
+        isSavedState = !isSavedState;
+    }
+
+    unsaveBtn.onclick = toggleSaveState;
 
     host.querySelector('#lingua-master-btn').onclick = (e) => {
         const newLearned = !wordObj.learned;
