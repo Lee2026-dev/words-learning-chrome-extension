@@ -299,7 +299,6 @@ async function renderWordList(filterText = '') {
                     ${phoneticHtml}
                 </div>
                 <div class="wc-translation">${escapeHtml(word.translation || 'No translation')}</div>
-                ${word.context ? `<div class="wc-context">"${escapeHtml(word.context)}"</div>` : ''}
                 ${date ? `<div class="wc-date">${date}</div>` : ''}
             </div>
             <div class="wc-actions">

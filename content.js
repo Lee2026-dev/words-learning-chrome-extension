@@ -511,7 +511,6 @@ function renderSavedBubbleRich(host, wordObj, richData) {
             <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
                 ${meaningsHtml}
             </div>
-            ${wordObj.context ? `<div class="bubble-context" style="margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:13px; line-height:1.5; color:#94a3b8; font-style:italic;">${wordObj.context}</div>` : ""}
         </div>
     `;
 
@@ -593,20 +592,8 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
     const saveIcon = isSaved ? heartFilled : heartOutline;
     const saveColor = isSaved ? "#ef4444" : "#94a3b8";
 
-    // Context HTML
+    // Context HTML - Removed as per request
     let contextHtml = "";
-    if (context && !isLoading) {
-        const regex = new RegExp(`(${escapeRegExp(original)})`, 'gi');
-        const highlightedOrig = context.replace(regex, '<span style="color:var(--primary-color); font-weight:700;">$1</span>');
-        const translatedBlock = contextTranslation ? `<div style="margin-top:8px; color:#334155; font-weight:500;">${contextTranslation}</div>` : "";
-
-        contextHtml = `
-            <div class="bubble-context" style="margin-top:12px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:13px; line-height:1.5;">
-                <div style="color:#94a3b8; font-style:italic; margin-bottom:4px;">${highlightedOrig}</div>
-                ${translatedBlock}
-            </div>
-         `;
-    }
 
     // Phonetic HTML
     let phoneticHtml = "";
@@ -668,7 +655,6 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
             <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
                 ${meaningsHtml}
             </div>
-            ${contextHtml}
         </div>
     `;
 
