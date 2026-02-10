@@ -341,15 +341,13 @@ async function handleTranslateSelection(selectionText) {
 
     showBubble(selectionText, "正在翻译...", true, context);
 
-    // Parallel translation of Word and Context
-    // translateText now returns full object { translation, phonetic, meanings, audio_url, ... }
-    const [wordResult, contextResult] = await Promise.all([
-        translateText(selectionText, targetLang),
-        context ? translateText(context, targetLang) : Promise.resolve({ translation: "" })
-    ]);
+    // Translate only the selected word (not the context)
+    // translateText returns full object { translation, phonetic, meanings, audio_url, ... }
+    const wordResult = await translateText(selectionText, targetLang);
 
     // Pass the full wordResult object to support rich display
-    updateBubbleContent(selectionText, wordResult, context, contextResult.translation, wordResult.phonetic);
+    // Context is shown but not translated (empty string for contextTranslation)
+    updateBubbleContent(selectionText, wordResult, context, "", wordResult.phonetic);
 }
 
 async function handleExternalWordClick(word, x, y) {
