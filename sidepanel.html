@@ -38,12 +38,12 @@
                 <!-- Dashboard Stats -->
                 <section class="sp-section stats-section">
                     <div class="stats-card-premium">
-                        <div class="stats-header">
+                        <!-- <div class="stats-header">
                             <span class="stats-title">Today's Progress</span>
                             <span class="stats-badge">+12 words</span>
-                        </div>
+                        </div> -->
                         <div class="stats-row">
-                            <div class="stat-box">
+                            <div class="stat-box" id="stat-saved-btn" style="cursor: pointer;">
                                 <span class="stat-num">85</span>
                                 <span class="stat-label">Saved</span>
                             </div>
@@ -126,52 +126,6 @@
                     </div>
                 </section>
 
-                <!-- Wordbook Link -->
-                <section class="sp-section" style="margin-top: auto;">
-                    <button id="open-wordbook" class="sp-action-btn">
-                        <span>Open Wordbook</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14"></path>
-                            <path d="M12 5l7 7-7 7"></path>
-                        </svg>
-                    </button>
-                </section>
-
-                <!-- Recent Words (Mockup) -->
-                <section class="sp-section">
-                    <h3 class="section-title">Recent</h3>
-                    <div class="word-list-mini">
-                        <div class="word-item-mini">
-                            <div class="word-text">
-                                <span class="w-original">Serendipity</span>
-                                <span class="w-trans">意外发现珍宝的运气</span>
-                            </div>
-                            <button class="w-audio-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="word-item-mini">
-                            <div class="word-text">
-                                <span class="w-original">Ephemeral</span>
-                                <span class="w-trans">短暂的</span>
-                            </div>
-                            <button class="w-audio-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </section>
 
             </main>
         </div>
@@ -252,6 +206,35 @@
                         </div>
                     </div>
                 </section>
+            </main>
+        </div>
+
+        <!-- Word List View (New) -->
+        <div id="word-list-view" class="view-hidden">
+            <header class="sp-header">
+                <button class="icon-btn" id="word-list-back-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5"></path>
+                        <path d="M12 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <span class="view-title">Saved Words</span>
+                <div style="width: 32px;"></div>
+            </header>
+            <div class="sp-search-container">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="word-search" placeholder="Search words..." class="sp-search-input">
+                </div>
+            </div>
+            <main class="sp-content" id="word-list-container">
+                <!-- Words will be injected here -->
             </main>
         </div>
     </div>

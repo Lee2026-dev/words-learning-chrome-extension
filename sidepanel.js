@@ -16,26 +16,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('settings-btn')?.addEventListener('click', () => switchView('settings'));
     document.getElementById('back-btn')?.addEventListener('click', () => switchView('main'));
 
+    // Word List Navigation
+    document.getElementById('stat-saved-btn')?.addEventListener('click', () => {
+        switchView('word-list');
+        renderWordList();
+    });
+    document.getElementById('word-list-back-btn')?.addEventListener('click', () => switchView('main'));
+
+    // Search
+    document.getElementById('word-search')?.addEventListener('input', (e) => {
+        renderWordList(e.target.value);
+    });
+
     // Highlight Customization
     setupHighlightControls();
-
-    // Links
-    document.getElementById('open-wordbook')?.addEventListener('click', () => {
-        chrome.tabs.create({ url: 'wordbook.html' });
-    });
 });
 
 function switchView(viewName) {
-    const mainView = document.getElementById('main-view');
-    const settingsView = document.getElementById('settings-view');
+    const views = {
+        'main': document.getElementById('main-view'),
+        'settings': document.getElementById('settings-view'),
+        'word-list': document.getElementById('word-list-view')
+    };
 
-    if (viewName === 'settings') {
-        mainView.classList.add('view-hidden');
-        settingsView.classList.remove('view-hidden');
-    } else {
-        settingsView.classList.add('view-hidden');
-        mainView.classList.remove('view-hidden');
-    }
+    // Hide all
+    Object.values(views).forEach(el => {
+        if (el) el.classList.add('view-hidden');
+    });
+
+    // Show target
+    const target = views[viewName];
+    if (target) target.classList.remove('view-hidden');
 }
 
 async function loadSettings() {
@@ -140,12 +151,7 @@ function updateHighlightUI(style, color) {
     // Update Picker if not matched (custom color)
     const picker = document.getElementById('custom-color-picker');
     if (picker) {
-        picker.value = color; // Always update picker visual
-        if (!matched) {
-            // Visualize custom selection on the picker icon?
-            // The icon itself is hard to style dynamically without inline SVG manipulation,
-            // but the input value change is enough.
-        }
+        picker.value = color;
     }
 
     // Update Preview
@@ -221,4 +227,122 @@ function loadStats() {
         const bar = document.querySelector('.mastery-bar');
         if (bar) bar.style.width = `${percentage}%`;
     });
+}
+
+// --- Word List Logic ---
+
+async function renderWordList(filterText = '') {
+    const container = document.getElementById('word-list-container');
+    if (!container) return;
+
+    container.innerHTML = '<div class="words-loading" style="text-align:center;padding:20px;color:var(--sp-text-muted);">Loading...</div>';
+
+    const data = await chrome.storage.local.get(['vocabulary']);
+    let words = data.vocabulary || [];
+
+    // Filter
+    if (filterText) {
+        const lowerFilter = filterText.toLowerCase();
+        words = words.filter(w =>
+            (w.original && w.original.toLowerCase().includes(lowerFilter)) ||
+            (w.translation && w.translation.toLowerCase().includes(lowerFilter))
+        );
+    }
+
+    // Sort by date (newest first)
+    words.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    container.innerHTML = '';
+
+    if (words.length === 0) {
+        container.innerHTML = `
+            <div class="words-empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <div class="empty-text">${filterText ? 'No matching words' : 'No words saved yet'}</div>
+                <div class="empty-sub">${filterText ? 'Try a different search term' : 'Start reading to save new words'}</div>
+            </div>
+        `;
+        return;
+    }
+
+    words.forEach(word => {
+        const card = document.createElement('div');
+        card.className = 'word-card';
+
+        // Format date
+        const date = word.timestamp ? new Date(word.timestamp * 1000).toLocaleDateString('zh-CN', {
+            month: 'short',
+            day: 'numeric'
+        }) : '';
+
+        // Phonetic display
+        const phoneticHtml = word.phonetic ? `<span class="wc-phonetic">/${escapeHtml(word.phonetic)}/</span>` : '';
+
+        // Learned badge
+        const learnedBadge = word.learned ? '<span class="wc-badge wc-badge-learned">✓ 已掌握</span>' : '';
+
+        card.innerHTML = `
+            <div class="wc-content">
+                <div class="wc-header">
+                    <div class="wc-title-row">
+                        <span class="wc-original">${escapeHtml(word.original || word.text || '')}</span>
+                        ${learnedBadge}
+                    </div>
+                    ${phoneticHtml}
+                </div>
+                <div class="wc-translation">${escapeHtml(word.translation || 'No translation')}</div>
+                ${word.context ? `<div class="wc-context">"${escapeHtml(word.context)}"</div>` : ''}
+                ${date ? `<div class="wc-date">${date}</div>` : ''}
+            </div>
+            <div class="wc-actions">
+                <button class="wc-action-btn delete" title="删除" data-text="${escapeHtml(word.original || word.text)}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        // Add delete handler
+        const deleteBtn = card.querySelector('.delete');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteWord(word.original || word.text);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+async function deleteWord(text) {
+    if (!confirm(`确定删除 "${text}"?`)) return;
+
+    const data = await chrome.storage.local.get(['vocabulary']);
+    let words = data.vocabulary || [];
+
+    const initialLength = words.length;
+    // Support both 'original' and 'text' fields for compatibility
+    words = words.filter(w => (w.original || w.text) !== text);
+
+    if (words.length < initialLength) {
+        await chrome.storage.local.set({ vocabulary: words });
+        renderWordList(document.getElementById('word-search').value);
+        loadStats();
+    }
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
