@@ -11,164 +11,249 @@
 
 <body class="lingua-body">
     <div class="sidepanel-container">
-        <!-- Header -->
-        <header class="sp-header">
-            <div class="logo-section">
-                <div class="logo-icon-bg">
-                    <span class="logo-icon">📘</span>
+        <!-- Main View -->
+        <div id="main-view">
+            <!-- Header -->
+            <header class="sp-header">
+                <div class="logo-section">
+                    <div class="logo-icon-bg">
+                        <span class="logo-icon">📘</span>
+                    </div>
+                    <span class="logo-text">LinguaLearn</span>
                 </div>
-                <span class="logo-text">LinguaLearn</span>
-            </div>
-            <button class="icon-btn" title="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
-                    </path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </button>
-        </header>
-
-        <!-- Main Content -->
-        <main class="sp-content">
-
-            <!-- Dashboard Stats -->
-            <section class="sp-section stats-section">
-                <div class="stats-card-premium">
-                    <div class="stats-header">
-                        <span class="stats-title">Today's Progress</span>
-                        <span class="stats-badge">+12 words</span>
-                    </div>
-                    <div class="stats-row">
-                        <div class="stat-box">
-                            <span class="stat-num">85</span>
-                            <span class="stat-label">Saved</span>
-                        </div>
-                        <div class="stat-divider"></div>
-                        <div class="stat-box">
-                            <span class="stat-num">24</span>
-                            <span class="stat-label">Mastered</span>
-                        </div>
-                    </div>
-                    <div class="mastery-track">
-                        <div class="mastery-bar" style="width: 28%"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Quick Actions -->
-            <section class="sp-section">
-                <h3 class="section-title">Features</h3>
-
-                <!-- Toggle Item: Immersion -->
-                <div class="feature-card">
-                    <div class="feature-icon bg-blue">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                        </svg>
-                    </div>
-                    <div class="feature-info">
-                        <span class="feature-name">Immersion</span>
-                        <span class="feature-desc">Translate page content</span>
-                    </div>
-                    <label class="switch-sm">
-                        <input type="checkbox" id="immersion-toggle">
-                        <span class="slider-sm round"></span>
-                    </label>
-                </div>
-
-                <!-- Toggle Item: YouTube -->
-                <div class="feature-card">
-                    <div class="feature-icon bg-red">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z">
-                            </path>
-                            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
-                        </svg>
-                    </div>
-                    <div class="feature-info">
-                        <span class="feature-name">YouTube</span>
-                        <span class="feature-desc">Bilingual subtitles</span>
-                    </div>
-                    <label class="switch-sm">
-                        <input type="checkbox" id="youtube-toggle" checked>
-                        <span class="slider-sm round"></span>
-                    </label>
-                </div>
-
-                <!-- Toggle Item: Highlight -->
-                <div class="feature-card">
-                    <div class="feature-icon bg-yellow">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                        </svg>
-                    </div>
-                    <div class="feature-info">
-                        <span class="feature-name">Highlight</span>
-                        <span class="feature-desc">Mark saved words</span>
-                    </div>
-                    <label class="switch-sm">
-                        <input type="checkbox" id="highlight-toggle" checked>
-                        <span class="slider-sm round"></span>
-                    </label>
-                </div>
-            </section>
-
-            <!-- Wordbook Link -->
-            <section class="sp-section" style="margin-top: auto;">
-                <button id="open-wordbook" class="sp-action-btn">
-                    <span>Open Wordbook</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                <button class="icon-btn" id="settings-btn" title="Settings">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M5 12h14"></path>
-                        <path d="M12 5l7 7-7 7"></path>
+                        <path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                        </path>
+                        <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 </button>
-            </section>
+            </header>
 
-            <!-- Recent Words (Mockup) -->
-            <section class="sp-section">
-                <h3 class="section-title">Recent</h3>
-                <div class="word-list-mini">
-                    <div class="word-item-mini">
-                        <div class="word-text">
-                            <span class="w-original">Serendipity</span>
-                            <span class="w-trans">意外发现珍宝的运气</span>
+            <!-- Main Content -->
+            <main class="sp-content">
+
+                <!-- Dashboard Stats -->
+                <section class="sp-section stats-section">
+                    <div class="stats-card-premium">
+                        <div class="stats-header">
+                            <span class="stats-title">Today's Progress</span>
+                            <span class="stats-badge">+12 words</span>
                         </div>
-                        <button class="w-audio-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <span class="stat-num">85</span>
+                                <span class="stat-label">Saved</span>
+                            </div>
+                            <div class="stat-divider"></div>
+                            <div class="stat-box">
+                                <span class="stat-num">24</span>
+                                <span class="stat-label">Mastered</span>
+                            </div>
+                        </div>
+                        <div class="mastery-track">
+                            <div class="mastery-bar" style="width: 28%"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Quick Actions -->
+                <section class="sp-section">
+                    <h3 class="section-title">Features</h3>
+
+                    <!-- Toggle Item: Immersion -->
+                    <div class="feature-card">
+                        <div class="feature-icon bg-blue">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                             </svg>
-                        </button>
-                    </div>
-                    <div class="word-item-mini">
-                        <div class="word-text">
-                            <span class="w-original">Ephemeral</span>
-                            <span class="w-trans">短暂的</span>
                         </div>
-                        <button class="w-audio-btn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                        <div class="feature-info">
+                            <span class="feature-name">Immersion</span>
+                            <span class="feature-desc">Translate page content</span>
+                        </div>
+                        <label class="switch-sm">
+                            <input type="checkbox" id="immersion-toggle">
+                            <span class="slider-sm round"></span>
+                        </label>
+                    </div>
+
+                    <!-- Toggle Item: YouTube -->
+                    <div class="feature-card">
+                        <div class="feature-icon bg-red">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z">
+                                </path>
+                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
                             </svg>
-                        </button>
+                        </div>
+                        <div class="feature-info">
+                            <span class="feature-name">YouTube</span>
+                            <span class="feature-desc">Bilingual subtitles</span>
+                        </div>
+                        <label class="switch-sm">
+                            <input type="checkbox" id="youtube-toggle" checked>
+                            <span class="slider-sm round"></span>
+                        </label>
                     </div>
-                </div>
-            </section>
 
-        </main>
+                    <!-- Toggle Item: Highlight -->
+                    <div class="feature-card">
+                        <div class="feature-icon bg-yellow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                        </div>
+                        <div class="feature-info">
+                            <span class="feature-name">Highlight</span>
+                            <span class="feature-desc">Mark saved words</span>
+                        </div>
+                        <label class="switch-sm">
+                            <input type="checkbox" id="highlight-toggle" checked>
+                            <span class="slider-sm round"></span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Wordbook Link -->
+                <section class="sp-section" style="margin-top: auto;">
+                    <button id="open-wordbook" class="sp-action-btn">
+                        <span>Open Wordbook</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </section>
+
+                <!-- Recent Words (Mockup) -->
+                <section class="sp-section">
+                    <h3 class="section-title">Recent</h3>
+                    <div class="word-list-mini">
+                        <div class="word-item-mini">
+                            <div class="word-text">
+                                <span class="w-original">Serendipity</span>
+                                <span class="w-trans">意外发现珍宝的运气</span>
+                            </div>
+                            <button class="w-audio-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="word-item-mini">
+                            <div class="word-text">
+                                <span class="w-original">Ephemeral</span>
+                                <span class="w-trans">短暂的</span>
+                            </div>
+                            <button class="w-audio-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+
+        <!-- Settings View -->
+        <div id="settings-view" class="view-hidden">
+            <header class="sp-header">
+                <button class="icon-btn" id="back-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 12H5"></path>
+                        <path d="M12 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <span class="view-title">Settings</span>
+                <div style="width: 32px;"></div>
+            </header>
+
+            <main class="sp-content">
+                <!-- Highlight Settings -->
+                <section class="sp-section">
+                    <h3 class="section-title">Highlight Style</h3>
+                    <div class="settings-card">
+                        <div class="setting-group">
+                            <label class="setting-label">Style</label>
+                            <div class="style-buttons">
+                                <button class="style-btn active" data-style="underline">
+                                    <span
+                                        style="text-decoration: underline; text-decoration-thickness: 2px;">Underline</span>
+                                </button>
+                                <button class="style-btn" data-style="background">
+                                    <span
+                                        style="background: var(--sp-primary); color: white; padding: 2px 8px; border-radius: 4px;">Background</span>
+                                </button>
+                                <button class="style-btn" data-style="bold">
+                                    <span style="font-weight: 700;">Bold</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Color</label>
+                            <div class="color-palette">
+                                <div class="color-dot active" style="background:#FCD34D" data-color="#FCD34D"
+                                    title="Sunshine"></div>
+                                <div class="color-dot" style="background:#4ADE80" data-color="#4ADE80" title="Green">
+                                </div>
+                                <div class="color-dot" style="background:#F472B6" data-color="#F472B6" title="Pink">
+                                </div>
+                                <div class="color-dot" style="background:#60A5FA" data-color="#60A5FA" title="Blue">
+                                </div>
+                                <div class="color-dot" style="background:#A78BFA" data-color="#A78BFA" title="Purple">
+                                </div>
+                                <label class="color-picker-label">
+                                    <input type="color" id="custom-color-picker" value="#FCD34D">
+                                    <div class="color-picker-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="13.5" cy="6.5" r=".5"></circle>
+                                            <circle cx="17.5" cy="10.5" r=".5"></circle>
+                                            <circle cx="8.5" cy="7.5" r=".5"></circle>
+                                            <circle cx="6.5" cy="12.5" r=".5"></circle>
+                                            <path
+                                                d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <label class="setting-label">Preview</label>
+                            <div class="preview-box">
+                                This is <span id="preview-highlight" class="preview-word">example</span> text.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
     </div>
     <script src="sidepanel.js"></script>
 </body>
