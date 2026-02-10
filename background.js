@@ -26,6 +26,10 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Translate & Save: '%s'",
     contexts: ["selection"]
   });
+
+  // Configure Side Panel to open on action click
+  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+    .catch((error) => console.error('Side Panel Error:', error));
 });
 
 // Handle Context Menu Clicks
