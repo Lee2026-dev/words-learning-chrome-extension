@@ -62,16 +62,16 @@ function startObserver() {
     observer = new MutationObserver((mutations) => {
         let shouldHighlight = false;
         for (const mutation of mutations) {
-            // Skip mutations from our own YouTube overlay to prevent feedback loop
-            if (mutation.target.closest && mutation.target.closest('#lingua-yt-captions')) {
+            // Skip mutations from our own UI elements (popups, overlays)
+            if (mutation.target.closest && (mutation.target.closest('#lingua-yt-captions') || mutation.target.closest('#lingua-bubble-host'))) {
                 continue;
             }
 
             if (mutation.addedNodes.length > 0) {
                 // Check if any added node is a relevant element or text node
                 for (let node of mutation.addedNodes) {
-                    // Skip if node is inside YouTube overlay
-                    if (node.nodeType === 1 && node.closest && node.closest('#lingua-yt-captions')) {
+                    // Skip if node is inside YouTube overlay or is our Bubble
+                    if (node.nodeType === 1 && node.closest && (node.closest('#lingua-yt-captions') || node.closest('#lingua-bubble-host'))) {
                         continue;
                     }
 
@@ -249,6 +249,9 @@ function applyHighlights(rootElement) {
                     return NodeFilter.FILTER_REJECT;
                 }
                 if (parent.classList.contains('lingua-highlight') || parent.closest('.lingua-highlight')) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                if (parent.closest('#lingua-bubble-host')) {
                     return NodeFilter.FILTER_REJECT;
                 }
                 if (node.nodeValue.trim().length === 0) {
