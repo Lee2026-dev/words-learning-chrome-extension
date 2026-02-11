@@ -329,8 +329,16 @@ function removeHighlights() {
 async function handleTranslateSelection(selectionText) {
     if (!selectionText) return;
 
-    const stored = await chrome.storage.local.get('settings');
-    const targetLang = stored.settings?.targetLanguage || 'en';
+    // Check if extension context is still valid
+    if (!chrome.runtime?.id) return;
+
+    let targetLang = 'en';
+    try {
+        const stored = await chrome.storage.local.get('settings');
+        targetLang = stored.settings?.targetLanguage || 'en';
+    } catch (e) {
+        console.warn("Context invalidated, using default lang");
+    }
 
     // Capture Context (Sentence)
     const selection = window.getSelection();
@@ -359,8 +367,13 @@ async function handleExternalWordClick(word, x, y) {
     // Show loading bubble at specific coordinates
     showBubbleAt(x, y, word, "正在翻译...", true);
 
-    const stored = await chrome.storage.local.get('settings');
-    const targetLang = stored.settings?.targetLanguage || 'en';
+    if (!chrome.runtime?.id) return;
+
+    let targetLang = 'en';
+    try {
+        const stored = await chrome.storage.local.get('settings');
+        targetLang = stored.settings?.targetLanguage || 'en';
+    } catch { return; }
 
     // Translate
     const result = await translateText(word, targetLang);

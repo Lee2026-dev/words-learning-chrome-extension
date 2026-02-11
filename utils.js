@@ -126,8 +126,13 @@ async function syncVocabulary() {
     } catch (error) {
         console.error("Utils SyncVocabulary Error:", error);
         // Last resort fallback
-        const data = await chrome.storage.local.get(['vocabulary']);
-        return data.vocabulary || [];
+        if (chrome.runtime?.id) {
+            try {
+                const data = await chrome.storage.local.get(['vocabulary']);
+                return data.vocabulary || [];
+            } catch { return []; }
+        }
+        return [];
     }
 }
 
@@ -152,28 +157,42 @@ function saveWord(original, translation, context, url, phonetic, meanings = []) 
     };
 
     // 2. Save to local storage immediately
-    chrome.storage.local.get(['vocabulary'], (data) => {
-        const vocab = data.vocabulary || [];
-        // Avoid duplicates
-        if (!vocab.some(w => w.original && w.original.toLowerCase() === original.toLowerCase())) {
-            vocab.push(wordObj);
-            chrome.storage.local.set({ vocabulary: vocab });
+    try {
+        if (chrome.runtime?.id) {
+            chrome.storage.local.get(['vocabulary'], (data) => {
+                if (chrome.runtime.lastError) return; // Prevent error logging if context dies mid-call
+                const vocab = data.vocabulary || [];
+                // Avoid duplicates
+                if (!vocab.some(w => w.original && w.original.toLowerCase() === original.toLowerCase())) {
+                    vocab.push(wordObj);
+                    chrome.storage.local.set({ vocabulary: vocab });
+                }
+            });
         }
-    });
+    } catch (e) {
+        console.warn("Extension context invalidated, save failed:", e);
+    }
 
     // 3. Fire backend API async (don't await)
     if (typeof api !== 'undefined') {
         api.saveWord(original, translation, context, url, phonetic, meanings).then(backendWord => {
             if (backendWord && backendWord.id) {
                 // Replace temp entry with real backend entry in local storage
-                chrome.storage.local.get(['vocabulary'], (data) => {
-                    const vocab = data.vocabulary || [];
-                    const idx = vocab.findIndex(w => w.id === tempId);
-                    if (idx !== -1) {
-                        vocab[idx] = { ...backendWord, _pendingSync: false };
+                try {
+                    if (chrome.runtime?.id) {
+                        chrome.storage.local.get(['vocabulary'], (data) => {
+                            if (chrome.runtime.lastError) return;
+                            const vocab = data.vocabulary || [];
+                            const idx = vocab.findIndex(w => w.id === tempId);
+                            if (idx !== -1) {
+                                vocab[idx] = { ...backendWord, _pendingSync: false };
+                            }
+                            chrome.storage.local.set({ vocabulary: vocab });
+                        });
                     }
-                    chrome.storage.local.set({ vocabulary: vocab });
-                });
+                } catch (e) {
+                    console.warn("Context invalidated during backend sync save:", e);
+                }
                 // Also update in-memory savedWords if it exists in content.js scope
                 if (typeof savedWords !== 'undefined') {
                     const memIdx = savedWords.findIndex(w => w.id === tempId);
@@ -200,14 +219,21 @@ function saveWord(original, translation, context, url, phonetic, meanings = []) 
  */
 function updateWordLocal(wordId, updates) {
     // 1. Update local storage immediately
-    chrome.storage.local.get(['vocabulary'], (data) => {
-        const vocab = data.vocabulary || [];
-        const idx = vocab.findIndex(v => v.id === wordId);
-        if (idx !== -1) {
-            Object.assign(vocab[idx], updates);
-            chrome.storage.local.set({ vocabulary: vocab });
+    try {
+        if (chrome.runtime?.id) {
+            chrome.storage.local.get(['vocabulary'], (data) => {
+                if (chrome.runtime.lastError) return;
+                const vocab = data.vocabulary || [];
+                const idx = vocab.findIndex(v => v.id === wordId);
+                if (idx !== -1) {
+                    Object.assign(vocab[idx], updates);
+                    chrome.storage.local.set({ vocabulary: vocab });
+                }
+            });
         }
-    });
+    } catch (e) {
+        console.warn("Context invalidated during update:", e);
+    }
 
     // 2. Update in-memory savedWords if available
     if (typeof savedWords !== 'undefined') {
@@ -238,11 +264,18 @@ function updateWordLocal(wordId, updates) {
  */
 function deleteWordLocal(wordId) {
     // 1. Remove from local storage immediately
-    chrome.storage.local.get(['vocabulary'], (data) => {
-        const vocab = data.vocabulary || [];
-        const filtered = vocab.filter(w => w.id !== wordId);
-        chrome.storage.local.set({ vocabulary: filtered });
-    });
+    try {
+        if (chrome.runtime?.id) {
+            chrome.storage.local.get(['vocabulary'], (data) => {
+                if (chrome.runtime.lastError) return;
+                const vocab = data.vocabulary || [];
+                const filtered = vocab.filter(w => w.id !== wordId);
+                chrome.storage.local.set({ vocabulary: filtered });
+            });
+        }
+    } catch (e) {
+        console.warn("Context invalidated during delete:", e);
+    }
 
     // 2. Remove from in-memory savedWords if available
     if (typeof savedWords !== 'undefined') {
