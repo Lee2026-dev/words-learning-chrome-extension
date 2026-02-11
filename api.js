@@ -52,7 +52,7 @@ const api = {
      * Save a new word.
      * @returns {Promise<Object|null>} saved word object
      */
-    async saveWord(original, translation, context, url, phonetic) {
+    async saveWord(original, translation, context, url, phonetic, meanings = []) {
         try {
             const payload = {
                 original,
@@ -61,7 +61,8 @@ const api = {
                 context,
                 url,
                 timestamp: Date.now() / 1000,
-                learned: false
+                learned: false,
+                meanings // Include meanings in payload
             };
 
             const response = await fetch(`${API_BASE}/words`, {

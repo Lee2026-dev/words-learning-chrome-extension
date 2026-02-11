@@ -444,7 +444,7 @@ async function showSavedWordBubble(e, wordObj) {
 function renderSavedBubbleRich(host, wordObj, richData) {
     const original = wordObj.original;
     const isRichData = typeof richData === 'object' && richData !== null;
-    const meanings = isRichData ? (richData.meanings || []) : [];
+    const meanings = (isRichData && richData.meanings && richData.meanings.length > 0) ? richData.meanings : (wordObj.meanings || []);
     const phoneticText = isRichData ? (richData.phonetic || wordObj.phonetic) : wordObj.phonetic;
     const audioUrl = isRichData ? richData.audio_url : null;
 
@@ -557,7 +557,8 @@ function renderSavedBubbleRich(host, wordObj, richData) {
         } else {
             // RE-SAVE: save the word again
             const finalContext = wordObj.context || window.location.href;
-            const newWord = saveWord(wordObj.original, wordObj.translation, finalContext, wordObj.url || window.location.href, wordObj.phonetic);
+            const meaningsToSave = (typeof richData !== 'undefined' && richData.meanings) ? richData.meanings : (wordObj.meanings || []);
+            const newWord = saveWord(wordObj.original, wordObj.translation, finalContext, wordObj.url || window.location.href, wordObj.phonetic, meaningsToSave);
             savedWords.push(newWord);
             // Update wordObj.id to the new ID so future operations work
             wordObj.id = newWord.id;
@@ -754,7 +755,7 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
                     saveBtn.style.color = "#ef4444";
 
                     const finalContext = context || window.location.href;
-                    const savedWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
+                    const savedWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText, meanings);
                     savedWords.push(savedWord);
                     applyHighlights(document.body);
                 }
@@ -769,7 +770,7 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
                 if (!currentWord) {
                     // Local-first save
                     const finalContext = context || window.location.href;
-                    currentWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText);
+                    currentWord = saveWord(original, simpleTranslation, finalContext, window.location.href, phoneticText, meanings);
                     savedWords.push(currentWord);
                     applyHighlights(document.body);
                     // Update save icon too

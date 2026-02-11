@@ -1,12 +1,28 @@
 // utils.js - Bridge to API (Hybrid Strategy)
 
 /**
- * Translate text using Google API first, fallback to Backend if fails.
+ * Translate text — LOCAL FIRST, then Backend, then Google fallback.
  */
 async function translateText(text, targetLang) {
     if (!text || !text.trim()) return { translation: "" };
 
-    // 1. Try Backend API First (Rich Dictionary Data)
+    // 0. Check local savedWords first (instant, no network)
+    if (typeof savedWords !== 'undefined') {
+        const local = savedWords.find(w => w.original && w.original.toLowerCase() === text.trim().toLowerCase());
+        if (local && local.translation) {
+            console.log(`Translation found locally for "${text}"`);
+            return {
+                translation: local.translation,
+                phonetic: local.phonetic || '',
+                meanings: local.meanings || [],
+                // Local cache won't have rich meanings, so backend will be fetched
+                // by showSavedWordBubble for highlighted words.
+                // For new selections, return what we have.
+            };
+        }
+    }
+
+    // 1. Try Backend API (Rich Dictionary Data)
     try {
         if (typeof api !== 'undefined') {
             const result = await api.translate(text, targetLang);
@@ -119,7 +135,7 @@ async function syncVocabulary() {
  * Save a word — LOCAL FIRST, then sync to backend async.
  * Returns the word object immediately (with a temporary local ID).
  */
-function saveWord(original, translation, context, url, phonetic) {
+function saveWord(original, translation, context, url, phonetic, meanings = []) {
     // 1. Create word object with temporary local ID
     const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     const wordObj = {
@@ -130,6 +146,7 @@ function saveWord(original, translation, context, url, phonetic) {
         context: context || '',
         url: url || '',
         timestamp: Date.now() / 1000,
+        meanings: meanings || [],
         learned: false,
         _pendingSync: true // Flag: not yet confirmed by backend
     };
@@ -146,7 +163,7 @@ function saveWord(original, translation, context, url, phonetic) {
 
     // 3. Fire backend API async (don't await)
     if (typeof api !== 'undefined') {
-        api.saveWord(original, translation, context, url, phonetic).then(backendWord => {
+        api.saveWord(original, translation, context, url, phonetic, meanings).then(backendWord => {
             if (backendWord && backendWord.id) {
                 // Replace temp entry with real backend entry in local storage
                 chrome.storage.local.get(['vocabulary'], (data) => {
@@ -234,7 +251,6 @@ function deleteWordLocal(wordId) {
             savedWords.splice(idx, 1);
         }
     }
-
     // 3. Fire backend async
     if (typeof api !== 'undefined' && wordId && !wordId.startsWith('local_')) {
         api.deleteWord(wordId).catch(err => {
