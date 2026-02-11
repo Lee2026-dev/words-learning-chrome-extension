@@ -495,7 +495,8 @@ function renderSavedBubbleRich(host, wordObj, richData) {
             const pos = meaning.partOfSpeech || 'general';
             const color = posColors[pos] || posColors['general'];
             const defs = meaning.definitions || [];
-            const defsHtml = defs.map(d => `<div style="margin-bottom:4px; line-height:1.5;">${d.definition}</div>`).join('');
+            console.log('defs: ', defs)
+            const defsHtml = defs.join(',');
             return `<div style="margin-bottom:8px; display:flex; align-items:flex-start; gap:10px;"><span style="display:inline-block; background:${color}15; color:${color}; padding:2px 8px; border-radius:4px; font-size:12px; font-weight:600; flex-shrink:0; margin-top:2px;">${pos}</span><div style="font-size:15px; color:#1e293b; font-weight:500; line-height:1.5;">${defsHtml}</div></div>`;
         }).join('');
     } else {
@@ -672,7 +673,8 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
             const pos = meaning.partOfSpeech || 'general';
             const color = posColors[pos] || posColors['general'];
             const definitions = meaning.definitions || [];
-            const defsHtml = definitions.map(def => `<div style="margin-bottom:4px; line-height:1.5;">${def.definition}</div>`).join('');
+            console.log('definitions: ', definitions)
+            const defsHtml = definitions.join(',');
 
             return `
                 <div style="margin-bottom:8px; display:flex; align-items:flex-start; gap:10px;">
