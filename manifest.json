@@ -36,7 +36,8 @@
                 "api.js",
                 "utils.js",
                 "content.js",
-                "dashboard.js"
+                "dashboard.js",
+                "fab.js"
             ],
             "css": [
                 "styles.css"

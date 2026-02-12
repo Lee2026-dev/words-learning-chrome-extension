@@ -145,8 +145,8 @@
                                 </div>
                             </div>
 
-                            <!-- Highlighter -->
-                            <div class="setting-card">
+                            <!-- Highlighter (Nav Item) -->
+                            <div class="setting-card clickable" id="open-highlight-settings">
                                 <div class="setting-row">
                                     <div class="setting-info">
                                         <div class="setting-icon">
@@ -159,72 +159,15 @@
                                         </div>
                                         <div class="setting-text">
                                             <span class="setting-label">高亮单词</span>
-                                            <span class="setting-desc">高亮显示已收藏的单词</span>
+                                            <span class="setting-desc">样式、颜色、开关</span>
                                         </div>
                                     </div>
-                                    <label class="switch">
-                                        <input type="checkbox" id="highlight-toggle" checked>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-
-                                <!-- Highlighter Customization Sub-Panel -->
-                                <div id="highlight-settings-panel" class="highlight-sub-panel">
-                                    <!-- Style Selector -->
-                                    <div class="sub-section">
-                                        <label class="sub-label">样式</label>
-                                        <div class="style-selector">
-                                            <button class="style-btn active" data-style="underline" title="下划线">
-                                                <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
-                                            </button>
-                                            <button class="style-btn" data-style="background" title="背景高亮">
-                                                <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
-                                            </button>
-                                            <button class="style-btn" data-style="bold" title="粗体">
-                                                <strong>B</strong>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Color Picker -->
-                                    <div class="sub-section">
-                                        <label class="sub-label">颜色</label>
-                                        <div class="color-palette">
-                                            <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
-                                                title="黄色"></div>
-                                            <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
-                                            </div>
-                                            <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
-                                            </div>
-                                            <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
-                                            </div>
-                                            <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
-                                            </div>
-                                            <label class="color-picker-wrapper" title="自定义颜色">
-                                                <input type="color" id="custom-color-picker" value="#FCD34D">
-                                                <div class="color-picker-icon">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                        stroke-linecap="round" stroke-linejoin="round">
-                                                        <circle cx="13.5" cy="6.5" r=".5"></circle>
-                                                        <circle cx="17.5" cy="10.5" r=".5"></circle>
-                                                        <circle cx="8.5" cy="7.5" r=".5"></circle>
-                                                        <circle cx="6.5" cy="12.5" r=".5"></circle>
-                                                        <path
-                                                            d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
-                                                        </path>
-                                                    </svg>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Preview -->
-                                    <div class="sub-section">
-                                        <label class="sub-label">预览</label>
-                                        <div class="preview-box">
-                                            这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
-                                        </div>
+                                    <div class="setting-action">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
                                     </div>
                                 </div>
                             </div>
@@ -277,6 +220,97 @@
                                         <input type="checkbox" id="youtube-toggle" checked>
                                         <span class="slider round"></span>
                                     </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highlight Settings View (Hidden by default) -->
+                <div id="highlight-settings-view" class="list-view-container" style="display: none;">
+                    <div class="list-header">
+                        <button id="back-to-dashboard-from-highlight" class="back-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                            返回
+                        </button>
+                        <span class="list-title">高亮设置</span>
+                    </div>
+                    
+                    <div class="list-content">
+                        <!-- Master Toggle -->
+                        <div class="setting-card">
+                            <div class="setting-row">
+                                <div class="setting-info">
+                                    <div class="setting-text">
+                                        <span class="setting-label">启用高亮</span>
+                                        <span class="setting-desc">在网页面上显示高亮单词</span>
+                                    </div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="highlight-toggle" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Highlight Config (Always Visible here) -->
+                        <div class="setting-card">
+                            <div id="highlight-settings-panel" class="highlight-sub-panel visible" style="max-height: none; opacity: 1; margin: 0; padding: 0; border: none;">
+                                <!-- Style Selector -->
+                                <div class="sub-section">
+                                    <label class="sub-label">样式</label>
+                                    <div class="style-selector">
+                                        <button class="style-btn active" data-style="underline" title="下划线">
+                                            <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
+                                        </button>
+                                        <button class="style-btn" data-style="background" title="背景高亮">
+                                            <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
+                                        </button>
+                                        <button class="style-btn" data-style="bold" title="粗体">
+                                            <strong>B</strong>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Color Picker -->
+                                <div class="sub-section">
+                                    <label class="sub-label">颜色</label>
+                                    <div class="color-palette">
+                                        <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
+                                            title="黄色"></div>
+                                        <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
+                                        </div>
+                                        <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
+                                        </div>
+                                        <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
+                                        </div>
+                                        <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
+                                        </div>
+                                        <label class="color-picker-wrapper" title="自定义颜色">
+                                            <input type="color" id="custom-color-picker" value="#FCD34D">
+                                            <div class="color-picker-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="13.5" cy="6.5" r=".5"></circle>
+                                                    <circle cx="17.5" cy="10.5" r=".5"></circle>
+                                                    <circle cx="8.5" cy="7.5" r=".5"></circle>
+                                                    <circle cx="6.5" cy="12.5" r=".5"></circle>
+                                                    <path
+                                                        d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Preview -->
+                                <div class="sub-section">
+                                    <label class="sub-label">预览</label>
+                                    <div class="preview-box">
+                                        这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -344,21 +378,21 @@
         const mastered = words.filter(w => w.learned).length;
         const percentage = total > 0 ? Math.round((mastered / total) * 100) : 0;
 
-        shadowRoot.getElementById('word-count').textContent = total;
-        shadowRoot.getElementById('mastered-count').textContent = mastered;
+        shadowRoot.querySelector('#word-count').textContent = total;
+        shadowRoot.querySelector('#mastered-count').textContent = mastered;
 
-        const progressBar = shadowRoot.getElementById('mastery-progress');
-        const progressInfo = shadowRoot.getElementById('mastery-info');
+        const progressBar = shadowRoot.querySelector('#mastery-progress');
+        const progressInfo = shadowRoot.querySelector('#mastery-info');
 
         if (progressBar) progressBar.style.width = `${percentage}%`;
         if (progressInfo) progressInfo.textContent = `${percentage}% 掌握度`;
     }
 
     function updateSettingsUI(settings) {
-        const highlightToggle = shadowRoot.getElementById('highlight-toggle');
-        const langSelect = shadowRoot.getElementById('target-lang');
-        const immersionToggle = shadowRoot.getElementById('immersion-toggle');
-        const youtubeToggle = shadowRoot.getElementById('youtube-toggle');
+        const highlightToggle = shadowRoot.querySelector('#highlight-toggle');
+        const langSelect = shadowRoot.querySelector('#target-lang');
+        const immersionToggle = shadowRoot.querySelector('#immersion-toggle');
+        const youtubeToggle = shadowRoot.querySelector('#youtube-toggle');
 
         if (highlightToggle) highlightToggle.checked = settings.highlightEnabled !== false;
         if (langSelect) langSelect.value = settings.targetLanguage || 'zh';
@@ -366,20 +400,20 @@
         if (youtubeToggle) youtubeToggle.checked = settings.youtubeSubtitlesEnabled !== false;
 
         // Highlighter Customization
-        const highlightPanel = shadowRoot.getElementById('highlight-settings-panel');
+        const highlightPanel = shadowRoot.querySelector('#highlight-settings-panel');
         const styleBtns = shadowRoot.querySelectorAll('.style-btn');
         const colorSwatches = shadowRoot.querySelectorAll('.color-swatch');
-        const customColorPicker = shadowRoot.getElementById('custom-color-picker');
+        const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
 
         const highlightStyle = settings.highlightStyle || 'underline';
         const highlightColor = settings.highlightColor || '#FCD34D';
 
-        // Visibility
-        if (highlightToggle && highlightToggle.checked) {
-            highlightPanel.classList.add('visible');
-        } else {
-            highlightPanel.classList.remove('visible');
-        }
+        // Visibility - Panel is always visible in its own view now
+        // if (highlightToggle && highlightToggle.checked) {
+        //     highlightPanel.classList.add('visible');
+        // } else {
+        //     highlightPanel.classList.remove('visible');
+        // }
 
         // Active States
         styleBtns.forEach(btn => {
@@ -398,7 +432,7 @@
     }
 
     function updatePreview(shadowRoot, style, color) {
-        const previewText = shadowRoot.getElementById('preview-text');
+        const previewText = shadowRoot.querySelector('#preview-text');
         if (!previewText) return;
 
         // Get current style and color if not provided
@@ -406,7 +440,7 @@
             style = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
         }
         if (!color) {
-            color = shadowRoot.querySelector('.color-swatch.active')?.dataset.color || shadowRoot.getElementById('custom-color-picker')?.value || '#FCD34D';
+            color = shadowRoot.querySelector('.color-swatch.active')?.dataset.color || shadowRoot.querySelector('#custom-color-picker')?.value || '#FCD34D';
         }
 
         previewText.className = 'preview-highlight'; // Reset classes
@@ -431,21 +465,21 @@
         // We use shadowRoot.getElementById/querySelector
 
         // Settings Toggles
-        const highlightToggle = shadowRoot.getElementById('highlight-toggle');
+        const highlightToggle = shadowRoot.querySelector('#highlight-toggle');
         if (highlightToggle) {
             highlightToggle.addEventListener('change', (e) => {
                 updateSetting('highlightEnabled', e.target.checked);
                 // NOTIFY CONTENT SCRIPT
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'toggleHighlight', enabled: e.target.checked }, '*');
 
-                // Toggle sub-panel
-                const highlightPanel = shadowRoot.getElementById('highlight-settings-panel');
-                if (e.target.checked) highlightPanel.classList.add('visible');
-                else highlightPanel.classList.remove('visible');
+                // Toggle sub-panel - REMOVED (Panel is in separate view)
+                // const highlightPanel = shadowRoot.querySelector('#highlight-settings-panel');
+                // if (e.target.checked) highlightPanel.classList.add('visible');
+                // else highlightPanel.classList.remove('visible');
             });
         }
 
-        const immersionToggle = shadowRoot.getElementById('immersion-toggle');
+        const immersionToggle = shadowRoot.querySelector('#immersion-toggle');
         if (immersionToggle) {
             immersionToggle.addEventListener('change', (e) => {
                 updateSetting('immersionMode', e.target.checked);
@@ -453,7 +487,7 @@
             });
         }
 
-        const youtubeToggle = shadowRoot.getElementById('youtube-toggle');
+        const youtubeToggle = shadowRoot.querySelector('#youtube-toggle');
         if (youtubeToggle) {
             youtubeToggle.addEventListener('change', (e) => {
                 updateSetting('youtubeSubtitlesEnabled', e.target.checked);
@@ -463,7 +497,7 @@
             });
         }
 
-        const langSelect = shadowRoot.getElementById('target-lang');
+        const langSelect = shadowRoot.querySelector('#target-lang');
         if (langSelect) {
             langSelect.addEventListener('change', (e) => {
                 updateSetting('targetLanguage', e.target.value);
@@ -474,7 +508,7 @@
         const styleBtns = shadowRoot.querySelectorAll('.style-btn');
         styleBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                const highlightColor = shadowRoot.getElementById('custom-color-picker')?.value || '#FCD34D';
+                const highlightColor = shadowRoot.querySelector('#custom-color-picker')?.value || '#FCD34D';
                 styleBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
 
@@ -494,7 +528,7 @@
                 swatch.classList.add('active');
 
                 const newColor = swatch.dataset.color;
-                const picker = shadowRoot.getElementById('custom-color-picker');
+                const picker = shadowRoot.querySelector('#custom-color-picker');
                 if (picker) picker.value = newColor;
 
                 updateSetting('highlightColor', newColor);
@@ -503,7 +537,7 @@
             });
         });
 
-        const customColorPicker = shadowRoot.getElementById('custom-color-picker');
+        const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
         if (customColorPicker) {
             customColorPicker.addEventListener('input', (e) => {
                 const highlightStyle = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
@@ -519,12 +553,35 @@
         // --- NEW: List View Interaction ---
 
         // Stats Click Handlers
-        const statCollected = shadowRoot.getElementById('stat-collected');
-        const statMastered = shadowRoot.getElementById('stat-mastered');
-        const mainContent = shadowRoot.getElementById('main-dashboard-content');
-        const listView = shadowRoot.getElementById('word-list-view');
-        const backBtn = shadowRoot.getElementById('back-to-dashboard');
-        const listTitle = shadowRoot.getElementById('list-title');
+        const statCollected = shadowRoot.querySelector('#stat-collected');
+        const statMastered = shadowRoot.querySelector('#stat-mastered');
+        const mainContent = shadowRoot.querySelector('#main-dashboard-content');
+        const listView = shadowRoot.querySelector('#word-list-view');
+        const backBtn = shadowRoot.querySelector('#back-to-dashboard');
+        const listTitle = shadowRoot.querySelector('#list-title');
+
+        // --- NEW: Highlight Settings View Interaction ---
+        const openHighlightBtn = shadowRoot.querySelector('#open-highlight-settings');
+        const backHighlightBtn = shadowRoot.querySelector('#back-to-dashboard-from-highlight');
+        const highlightView = shadowRoot.querySelector('#highlight-settings-view');
+
+        if (openHighlightBtn) {
+            openHighlightBtn.addEventListener('click', () => {
+                if (mainContent && highlightView) {
+                    mainContent.style.display = 'none';
+                    highlightView.style.display = 'flex';
+                }
+            });
+        }
+
+        if (backHighlightBtn) {
+            backHighlightBtn.addEventListener('click', () => {
+                if (mainContent && highlightView) {
+                    highlightView.style.display = 'none';
+                    mainContent.style.display = 'flex'; // Restore main dashboard
+                }
+            });
+        }
 
         if (statCollected) {
             statCollected.addEventListener('click', () => {
@@ -565,7 +622,7 @@
         }
 
         function renderWordList(words) {
-            const listContent = shadowRoot.getElementById('word-list-content');
+            const listContent = shadowRoot.querySelector('#word-list-content');
             if (!listContent) return;
 
             listContent.innerHTML = '';

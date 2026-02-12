@@ -739,3 +739,14 @@ input:checked+.slider:before {
     font-weight: 700;
     color: #FCD34D;
 }
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.setting-action {
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+}

@@ -43,12 +43,7 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-// Handle Messages from Content Scripts
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "openWordbook") {
-    chrome.tabs.create({ url: 'wordbook.html' });
-  }
-});
+
 
 // Handle Context Menu Clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -60,3 +55,19 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     });
   }
 });
+
+// Handle Messages from Content Scripts (Unified)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "openWordbook") {
+    chrome.tabs.create({ url: 'wordbook.html' });
+  } else if (request.action === "toggleDashboardFromContent") {
+    // Relay toggle command to the tab that sent the message
+    if (sender.tab) {
+      chrome.tabs.sendMessage(sender.tab.id, { action: "toggleDashboard" })
+        .catch((err) => {
+          console.warn("LinguaLearn: Could not toggle dashboard from FAB.", err);
+        });
+    }
+  }
+});
+

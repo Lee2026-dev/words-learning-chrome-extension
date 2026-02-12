@@ -516,3 +516,64 @@ input:checked+.slider:before {
     font-weight: 700;
     color: #FCD34D;
 }
+
+/* Navigation & Views */
+.view-container {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.view-container.active {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background-color: #F1F5F9;
+    color: var(--text-main);
+}
+
+.view-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+}

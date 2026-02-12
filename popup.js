@@ -107,13 +107,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             highlightPanel.classList.add('visible');
         }
 
-        // Toggle panel visibility when highlight toggle changes
-        if (highlightToggle) {
-            highlightToggle.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    highlightPanel.classList.add('visible');
-                } else {
-                    highlightPanel.classList.remove('visible');
+        // View Navigation
+        const mainView = document.getElementById('main-view');
+        const highlightView = document.getElementById('highlight-settings-view');
+        const openHighlightBtn = document.getElementById('open-highlight-settings');
+        const backBtn = document.getElementById('back-to-main');
+
+        if (openHighlightBtn) {
+            openHighlightBtn.addEventListener('click', () => {
+                if (mainView && highlightView) {
+                    mainView.classList.remove('active');
+                    highlightView.classList.add('active');
+                }
+            });
+        }
+
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                if (mainView && highlightView) {
+                    highlightView.classList.remove('active');
+                    mainView.classList.add('active');
                 }
             });
         }
