@@ -306,7 +306,7 @@
 .word-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 12px;
     background: #fff;
     border-bottom: 1px solid var(--border-color);
@@ -328,26 +328,23 @@
 }
 
 .word-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.6;
+    word-break: break-word;
+    /* Ensure long words don't break layout */
 }
 
 .word-main {
     font-weight: 600;
     color: var(--text-main);
     font-size: 15px;
-    flex-shrink: 0;
+    margin-right: 8px;
 }
 
 .word-phonetic {
-    font-size: 12px;
+    font-size: 13px;
     color: var(--text-secondary);
     font-family: monospace;
-    flex-shrink: 0;
+    margin-right: 8px;
 }
 
 .word-pos {
@@ -356,13 +353,13 @@
     color: var(--primary-color);
     text-transform: lowercase;
     opacity: 0.8;
+    margin-right: 4px;
 }
 
 .word-meanings {
     font-size: 13px;
     color: var(--text-secondary);
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.5;
 }
 
 .word-actions {
