@@ -132,6 +132,40 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     }
 });
 
+// Listen for messages from Dashboard (in-page postMessage)
+window.addEventListener('message', async (event) => {
+    if (event.source !== window) return;
+    if (event.data && event.data.type === 'LINGUA_UPDATE') {
+        const { action, enabled, style, color } = event.data;
+
+        if (action === "toggleHighlight") {
+            highlightEnabled = enabled;
+            if (highlightEnabled) {
+                await loadWordsAndHighlight();
+                startObserver();
+            } else {
+                removeHighlights();
+                if (observer) {
+                    observer.disconnect();
+                    observer = null;
+                }
+            }
+        } else if (action === "toggleImmersion") {
+            immersionEnabled = enabled;
+            if (immersionEnabled) {
+                ImmersionTranslator.start();
+            } else {
+                ImmersionTranslator.stop();
+            }
+        } else if (action === "updateHighlightStyle") {
+            const highlights = document.querySelectorAll('.lingua-highlight');
+            highlights.forEach(span => {
+                applyHighlightStyle(span, style, color);
+            });
+        }
+    }
+});
+
 // Apply highlight style based on settings
 function applyHighlightStyle(element, style, color) {
     // Get settings from storage if not provided

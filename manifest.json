@@ -35,7 +35,8 @@
             "js": [
                 "api.js",
                 "utils.js",
-                "content.js"
+                "content.js",
+                "dashboard.js"
             ],
             "css": [
                 "styles.css"
@@ -57,7 +58,9 @@
     "web_accessible_resources": [
         {
             "resources": [
-                "icons/*"
+                "icons/*",
+                "styles.css",
+                "dashboard.css"
             ],
             "matches": [
                 "<all_urls>"

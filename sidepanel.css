@@ -16,10 +16,9 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: var(--sp-bg-secondary);
+    background-color: #ffffff;
     color: var(--sp-text-main);
     overflow: hidden;
-    /* Prevent body scroll, handle in main */
     height: 100vh;
 }
 
@@ -27,6 +26,10 @@ body {
     display: flex;
     flex-direction: column;
     height: 100%;
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 /* Header */
@@ -91,6 +94,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    background-color: #ffffff !important;
+    /* Force white background */
 }
 
 .sp-section {

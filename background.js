@@ -27,9 +27,27 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ["selection"]
   });
 
-  // Configure Side Panel to open on action click
-  chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
-    .catch((error) => console.error('Side Panel Error:', error));
+  // Handle Action Click (Open Dashboard)
+  chrome.action.onClicked.addListener((tab) => {
+    // Check if the tab is a valid page
+    if (tab.url.startsWith("chrome://") || tab.url.startsWith("edge://") || tab.url.startsWith("about:")) {
+      // Cannot run on system pages
+      return;
+    }
+
+    chrome.tabs.sendMessage(tab.id, { action: "toggleDashboard" })
+      .catch((err) => {
+        // If content script is not ready (e.g. strict page or not reloaded), ignore or warn
+        console.warn("LinguaLearn: Could not toggle dashboard. Page might need refresh.", err);
+      });
+  });
+});
+
+// Handle Messages from Content Scripts
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "openWordbook") {
+    chrome.tabs.create({ url: 'wordbook.html' });
+  }
 });
 
 // Handle Context Menu Clicks
