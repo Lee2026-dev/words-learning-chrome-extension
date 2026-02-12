@@ -84,203 +84,195 @@
             </nav>
 
             <div class="content-wrapper">
-                <div class="stats-card">
-                    <div class="stats-grid">
-                        <div class="stat-item" id="stat-collected" data-type="all">
-                            <span class="stat-icon">📘</span>
-                            <div class="stat-text">
-                                <span class="stat-label">已收藏</span>
-                                <span class="stat-value" id="word-count">0</span>
+                <!-- Main Dashboard Content (Stats + Settings) -->
+                <div id="main-dashboard-content">
+                    <div class="stats-card">
+                        <div class="stats-grid">
+                            <div class="stat-item" id="stat-collected" data-type="all">
+                                <span class="stat-icon">📘</span>
+                                <div class="stat-text">
+                                    <span class="stat-label">已收藏</span>
+                                    <span class="stat-value" id="word-count">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-item" id="stat-mastered" data-type="mastered">
+                                <span class="stat-icon">✅</span>
+                                <div class="stat-text">
+                                    <span class="stat-label">已掌握</span>
+                                    <span class="stat-value" id="mastered-count">0</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="stat-item" id="stat-mastered" data-type="mastered">
-                            <span class="stat-icon">✅</span>
-                            <div class="stat-text">
-                                <span class="stat-label">已掌握</span>
-                                <span class="stat-value" id="mastered-count">0</span>
-                            </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="mastery-progress"></div>
                         </div>
+                        <div class="progress-info" id="mastery-info">0% 掌握度</div>
                     </div>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="mastery-progress"></div>
-                    </div>
-                    <div class="progress-info" id="mastery-info">0% 掌握度</div>
-                </div>
 
-                <!-- Main Settings (Visible by default) -->
-                <div id="main-settings-view">
-                    <div class="settings-group">
-                        <!-- Target Language -->
-                        <div class="setting-card">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                                            <path
-                                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                                            </path>
-                                        </svg>
+                    <!-- Main Settings (Visible by default) -->
+                    <div id="main-settings-view">
+                        <div class="settings-group">
+                            <!-- Target Language -->
+                            <div class="setting-card">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <div class="setting-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                                <path
+                                                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <div class="setting-text">
+                                            <span class="setting-label">目标语言</span>
+                                            <span class="setting-desc">翻译的目标语言</span>
+                                        </div>
                                     </div>
-                                    <div class="setting-text">
-                                        <span class="setting-label">目标语言</span>
-                                        <span class="setting-desc">翻译的目标语言</span>
-                                    </div>
+                                    <select id="target-lang" class="lingua-select">
+                                        <option value="zh">中文</option>
+                                    </select>
                                 </div>
-                                <select id="target-lang" class="lingua-select">
-                                    <option value="zh">中文</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Highlighter -->
-                        <div class="setting-card">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="M12 20h9"></path>
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                        </svg>
-                                    </div>
-                                    <div class="setting-text">
-                                        <span class="setting-label">高亮单词</span>
-                                        <span class="setting-desc">高亮显示已收藏的单词</span>
-                                    </div>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="highlight-toggle" checked>
-                                    <span class="slider round"></span>
-                                </label>
                             </div>
 
-                            <!-- Highlighter Customization Sub-Panel -->
-                            <div id="highlight-settings-panel" class="highlight-sub-panel">
-                                <!-- Style Selector -->
-                                <div class="sub-section">
-                                    <label class="sub-label">样式</label>
-                                    <div class="style-selector">
-                                        <button class="style-btn active" data-style="underline" title="下划线">
-                                            <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
-                                        </button>
-                                        <button class="style-btn" data-style="background" title="背景高亮">
-                                            <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
-                                        </button>
-                                        <button class="style-btn" data-style="bold" title="粗体">
-                                            <strong>B</strong>
-                                        </button>
+                            <!-- Highlighter -->
+                            <div class="setting-card">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <div class="setting-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path d="M12 20h9"></path>
+                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="setting-text">
+                                            <span class="setting-label">高亮单词</span>
+                                            <span class="setting-desc">高亮显示已收藏的单词</span>
+                                        </div>
                                     </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="highlight-toggle" checked>
+                                        <span class="slider round"></span>
+                                    </label>
                                 </div>
 
-                                <!-- Color Picker -->
-                                <div class="sub-section">
-                                    <label class="sub-label">颜色</label>
-                                    <div class="color-palette">
-                                        <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
-                                            title="黄色"></div>
-                                        <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
+                                <!-- Highlighter Customization Sub-Panel -->
+                                <div id="highlight-settings-panel" class="highlight-sub-panel">
+                                    <!-- Style Selector -->
+                                    <div class="sub-section">
+                                        <label class="sub-label">样式</label>
+                                        <div class="style-selector">
+                                            <button class="style-btn active" data-style="underline" title="下划线">
+                                                <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
+                                            </button>
+                                            <button class="style-btn" data-style="background" title="背景高亮">
+                                                <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
+                                            </button>
+                                            <button class="style-btn" data-style="bold" title="粗体">
+                                                <strong>B</strong>
+                                            </button>
                                         </div>
-                                        <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
-                                        </div>
-                                        <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
-                                        </div>
-                                        <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
-                                        </div>
-                                        <label class="color-picker-wrapper" title="自定义颜色">
-                                            <input type="color" id="custom-color-picker" value="#FCD34D">
-                                            <div class="color-picker-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                    stroke-linecap="round" stroke-linejoin="round">
-                                                    <circle cx="13.5" cy="6.5" r=".5"></circle>
-                                                    <circle cx="17.5" cy="10.5" r=".5"></circle>
-                                                    <circle cx="8.5" cy="7.5" r=".5"></circle>
-                                                    <circle cx="6.5" cy="12.5" r=".5"></circle>
-                                                    <path
-                                                        d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
-                                                    </path>
-                                                </svg>
+                                    </div>
+
+                                    <!-- Color Picker -->
+                                    <div class="sub-section">
+                                        <label class="sub-label">颜色</label>
+                                        <div class="color-palette">
+                                            <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
+                                                title="黄色"></div>
+                                            <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
                                             </div>
-                                        </label>
+                                            <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
+                                            </div>
+                                            <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
+                                            </div>
+                                            <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
+                                            </div>
+                                            <label class="color-picker-wrapper" title="自定义颜色">
+                                                <input type="color" id="custom-color-picker" value="#FCD34D">
+                                                <div class="color-picker-icon">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                        stroke-linecap="round" stroke-linejoin="round">
+                                                        <circle cx="13.5" cy="6.5" r=".5"></circle>
+                                                        <circle cx="17.5" cy="10.5" r=".5"></circle>
+                                                        <circle cx="8.5" cy="7.5" r=".5"></circle>
+                                                        <circle cx="6.5" cy="12.5" r=".5"></circle>
+                                                        <path
+                                                            d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
+                                                        </path>
+                                                    </svg>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Preview -->
-                                <div class="sub-section">
-                                    <label class="sub-label">预览</label>
-                                    <div class="preview-box">
-                                        这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
+                                    <!-- Preview -->
+                                    <div class="sub-section">
+                                        <label class="sub-label">预览</label>
+                                        <div class="preview-box">
+                                            这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Immersion Mode -->
-                        <div class="setting-card">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path
-                                                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
-                                            </path>
-                                        </svg>
+                            <!-- Immersion Mode -->
+                            <div class="setting-card">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <div class="setting-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path
+                                                    d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                                                </path>
+                                            </svg>
+                                        </div>
+                                        <div class="setting-text">
+                                            <span class="setting-label">沉浸式阅读</span>
+                                            <span class="setting-desc">自动翻译页面内容</span>
+                                        </div>
                                     </div>
-                                    <div class="setting-text">
-                                        <span class="setting-label">沉浸式阅读</span>
-                                        <span class="setting-desc">自动翻译页面内容</span>
-                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="immersion-toggle">
+                                        <span class="slider round"></span>
+                                    </label>
                                 </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="immersion-toggle">
-                                    <span class="slider round"></span>
-                                </label>
+                            </div>
+
+                            <!-- YouTube Subtitles -->
+                            <div class="setting-card">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <div class="setting-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round">
+                                                <path
+                                                    d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z">
+                                                </path>
+                                                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                                            </svg>
+                                        </div>
+                                        <div class="setting-text">
+                                            <span class="setting-label">YouTube 字幕</span>
+                                            <span class="setting-desc">显示双语字幕</span>
+                                        </div>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="youtube-toggle" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- YouTube Subtitles -->
-                        <div class="setting-card">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path
-                                                d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z">
-                                            </path>
-                                            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
-                                        </svg>
-                                    </div>
-                                    <div class="setting-text">
-                                        <span class="setting-label">YouTube 字幕</span>
-                                        <span class="setting-desc">显示双语字幕</span>
-                                    </div>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="youtube-toggle" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="actions-grid">
-                        <button id="open-wordbook" class="action-btn primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                            </svg>
-                            打开生词本
-                        </button>
                     </div>
                 </div>
 
@@ -395,23 +387,31 @@
 
         if (customColorPicker) customColorPicker.value = highlightColor;
 
-        updatePreview(highlightStyle, highlightColor);
+        updatePreview(shadowRoot, highlightStyle, highlightColor);
     }
 
-    function updatePreview(style, color) {
+    function updatePreview(shadowRoot, style, color) {
         const previewText = shadowRoot.getElementById('preview-text');
         if (!previewText) return;
 
-        previewText.className = 'preview-highlight';
+        // Get current style and color if not provided
+        if (!style) {
+            style = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
+        }
+        if (!color) {
+            color = shadowRoot.querySelector('.color-swatch.active')?.dataset.color || shadowRoot.getElementById('custom-color-picker')?.value || '#FCD34D';
+        }
+
+        previewText.className = 'preview-highlight'; // Reset classes
         previewText.classList.add(`style-${style}`);
 
         if (style === 'underline') {
-            previewText.style.textDecorationColor = color;
+            previewText.style.textDecoration = `underline 2px ${color}`;
             previewText.style.backgroundColor = '';
             previewText.style.color = '';
         } else if (style === 'background') {
             previewText.style.backgroundColor = color;
-            previewText.style.textDecorationColor = '';
+            previewText.style.textDecoration = '';
             previewText.style.color = '';
         } else if (style === 'bold') {
             previewText.style.color = color;
@@ -504,17 +504,8 @@
 
                 colorSwatches.forEach(s => s.classList.remove('active'));
                 updateSetting('highlightColor', newColor);
-                updatePreview(highlightStyle, newColor);
+                updatePreview(shadowRoot, highlightStyle, newColor);
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: highlightStyle, color: newColor }, '*');
-            });
-        }
-
-        // Wordbook Button
-        const wbBtn = shadowRoot.getElementById('open-wordbook');
-        if (wbBtn) {
-            wbBtn.addEventListener('click', () => {
-                // Open in new tab
-                chrome.runtime.sendMessage({ action: "openWordbook" });
             });
         }
 
@@ -523,7 +514,7 @@
         // Stats Click Handlers
         const statCollected = shadowRoot.getElementById('stat-collected');
         const statMastered = shadowRoot.getElementById('stat-mastered');
-        const mainView = shadowRoot.getElementById('main-settings-view');
+        const mainContent = shadowRoot.getElementById('main-dashboard-content');
         const listView = shadowRoot.getElementById('word-list-view');
         const backBtn = shadowRoot.getElementById('back-to-dashboard');
         const listTitle = shadowRoot.getElementById('list-title');
@@ -543,12 +534,12 @@
         if (backBtn) {
             backBtn.addEventListener('click', () => {
                 listView.style.display = 'none';
-                mainView.style.display = 'block';
+                mainContent.style.display = 'block';
             });
         }
 
         function showListView(type) {
-            if (!listView || !mainView) return;
+            if (!listView || !mainContent) return;
 
             // Update Title
             listTitle.textContent = type === 'all' ? '已收藏单词' : '已掌握单词';
@@ -562,7 +553,7 @@
             renderWordList(filteredWords);
 
             // Toggle Views
-            mainView.style.display = 'none';
+            mainContent.style.display = 'none';
             listView.style.display = 'flex'; // Changed to flex to support column layout
         }
 

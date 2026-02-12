@@ -99,12 +99,20 @@
 }
 
 /* Content */
-.content-wrapper {
-    padding: 0 24px 24px;
+#main-dashboard-content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    flex: 1;
+    height: 100%;
+}
+
+.content-wrapper {
+    padding: 24px;
+    height: calc(100% - 70px);
+    /* Subtract header height approx */
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    /* For absolute positioning of views if needed */
 }
 
 /* Stats Card */
