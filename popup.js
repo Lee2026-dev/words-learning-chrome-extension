@@ -92,20 +92,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Highlighter Customization Panel
-        const highlightPanel = document.getElementById('highlight-settings-panel');
-        const styleBtns = document.querySelectorAll('.style-btn');
+        const styleOptions = document.querySelectorAll('.style-option');
         const colorSwatches = document.querySelectorAll('.color-swatch');
         const customColorPicker = document.getElementById('custom-color-picker');
-        const previewText = document.getElementById('preview-text');
 
         // Initialize highlighter settings
         const highlightStyle = settings.highlightStyle || 'underline';
         const highlightColor = settings.highlightColor || '#FCD34D';
-
-        // Set initial panel visibility
-        if (highlightToggle && highlightToggle.checked) {
-            highlightPanel.classList.add('visible');
-        }
 
         // View Navigation
         const mainView = document.getElementById('main-view');
@@ -131,10 +124,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Set initial active style button
-        styleBtns.forEach(btn => {
-            if (btn.dataset.style === highlightStyle) {
-                btn.classList.add('active');
+        // Set initial active style option
+        styleOptions.forEach(opt => {
+            if (opt.dataset.style === highlightStyle) {
+                opt.classList.add('active');
             }
         });
 
@@ -150,18 +143,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             customColorPicker.value = highlightColor;
         }
 
-        // Update preview
-        updatePreview(highlightStyle, highlightColor);
+        // Style option click handlers
+        styleOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                styleOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
 
-        // Style button click handlers
-        styleBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                styleBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                const newStyle = btn.dataset.style;
+                const newStyle = opt.dataset.style;
                 updateSetting('highlightStyle', newStyle);
-                updatePreview(newStyle, highlightColor);
+
+                // If style is right-note or mask, color might still be relevant for some sub-features or future use
                 notifyTab('updateHighlightStyle', { style: newStyle, color: highlightColor });
             });
         });
@@ -173,10 +164,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 swatch.classList.add('active');
 
                 const newColor = swatch.dataset.color;
+                // Get current style
+                const currentStyle = document.querySelector('.style-option.active')?.dataset.style || 'underline';
+
                 updateSetting('highlightColor', newColor);
                 if (customColorPicker) customColorPicker.value = newColor;
-                updatePreview(highlightStyle, newColor);
-                notifyTab('updateHighlightStyle', { style: highlightStyle, color: newColor });
+
+                notifyTab('updateHighlightStyle', { style: currentStyle, color: newColor });
             });
         });
 
@@ -184,37 +178,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (customColorPicker) {
             customColorPicker.addEventListener('input', (e) => {
                 const newColor = e.target.value;
+                const currentStyle = document.querySelector('.style-option.active')?.dataset.style || 'underline';
+
                 colorSwatches.forEach(s => s.classList.remove('active'));
                 updateSetting('highlightColor', newColor);
-                updatePreview(highlightStyle, newColor);
-                notifyTab('updateHighlightStyle', { style: highlightStyle, color: newColor });
+                notifyTab('updateHighlightStyle', { style: currentStyle, color: newColor });
             });
-        }
-
-        // Preview update function
-        function updatePreview(style, color) {
-            if (!previewText) return;
-
-            // Remove all style classes
-            previewText.className = 'preview-highlight';
-
-            // Add current style class
-            previewText.classList.add(`style-${style}`);
-
-            // Apply color
-            if (style === 'underline') {
-                previewText.style.textDecorationColor = color;
-                previewText.style.backgroundColor = '';
-                previewText.style.color = '';
-            } else if (style === 'background') {
-                previewText.style.backgroundColor = color;
-                previewText.style.textDecorationColor = '';
-                previewText.style.color = '';
-            } else if (style === 'bold') {
-                previewText.style.color = color;
-                previewText.style.backgroundColor = '';
-                previewText.style.textDecorationColor = '';
-            }
         }
     });
 

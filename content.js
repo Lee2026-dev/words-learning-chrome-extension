@@ -191,6 +191,8 @@ function applyHighlightStyle(element, style, color) {
         el.style.color = '';
         el.style.padding = '';
         el.style.borderRadius = '';
+        el.style.opacity = '';
+        el.classList.remove('lingua-style-right-note');
 
         // Apply style
         if (s === 'underline') {
@@ -205,6 +207,8 @@ function applyHighlightStyle(element, style, color) {
         } else if (s === 'bold') {
             el.style.fontWeight = '700';
             el.style.color = c;
+        } else if (s === 'mask') {
+            el.style.opacity = '0.4'; // Transparency effect
         }
     }
 }

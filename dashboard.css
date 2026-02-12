@@ -606,37 +606,102 @@ input:checked+.slider:before {
     letter-spacing: 0.5px;
 }
 
-/* Style Selector */
-.style-selector {
+/* Style List */
+.style-list {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    background: #F8FAFC;
-    padding: 4px;
-    border-radius: 10px;
+    margin-bottom: 24px;
 }
 
-.style-btn {
-    flex: 1;
-    padding: 10px;
-    background: transparent;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-secondary);
+.style-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
-.style-btn:hover {
-    background: rgba(13, 148, 136, 0.1);
-    color: var(--primary-color);
+.style-option:hover {
+    background-color: #F8FAFC;
 }
 
-.style-btn.active {
+.style-option.active {
+    background-color: #F0FDFA;
+    /* Light Teal background */
+    border-color: var(--primary-color);
+}
+
+.style-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.style-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.style-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Radio Circle */
+.radio-circle {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.2s ease;
     background: white;
-    color: var(--primary-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.style-option.active .radio-circle {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+}
+
+.style-option.active .radio-circle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: white;
+    /* White dot inside? Or checkmark? */
+    border-radius: 50%;
+}
+
+/* Badge New */
+.badge-new {
+    font-size: 10px;
+    font-weight: 700;
+    background-color: #F0FDF4;
+    /* Green background */
+    color: #16A34A;
+    /* Green text */
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #BBF7D0;
+    text-transform: uppercase;
+}
+
+/* Color Section */
+.color-section {
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* Color Palette */

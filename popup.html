@@ -89,7 +89,7 @@
                                 </div>
                                 <div class="setting-text">
                                     <span class="setting-label">高亮单词</span>
-                                    <span class="setting-desc">样式、颜色、开关</span>
+                                    <span class="setting-desc">样式、颜色</span>
                                 </div>
                             </div>
                             <div class="setting-action">
@@ -179,44 +179,53 @@
                     <span class="view-title">高亮设置</span>
                 </div>
 
-                <!-- Master Toggle -->
+                <!-- Settings Form -->
                 <div class="setting-card">
-                    <div class="setting-row">
-                        <div class="setting-info">
-                            <div class="setting-text">
-                                <span class="setting-label">启用高亮</span>
-                                <span class="setting-desc">在网页面上显示高亮单词</span>
+                    <div id="highlight-settings-panel" class="highlight-sub-panel visible"
+                        style="max-height: none; opacity: 1; margin: 0; padding: 0; border: none;">
+
+                        <!-- Style List -->
+                        <div class="style-list">
+                            <!-- Highlight (Background) -->
+                            <div class="style-option" data-style="background">
+                                <div class="style-info">
+                                    <span class="style-name">高亮</span>
+                                    <span class="style-desc">生词以颜色高亮的形式突出显示</span>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+
+                            <!-- Transparency (Mask) -->
+                            <div class="style-option" data-style="mask">
+                                <div class="style-info">
+                                    <span class="style-name">透明度</span>
+                                    <span class="style-desc">生词以透明度的形式显示，不干扰阅读</span>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+
+                            <!-- Underline -->
+                            <div class="style-option" data-style="underline">
+                                <div class="style-info">
+                                    <span class="style-name">下划线</span>
+                                    <span class="style-desc">生词以带有颜色的下划线的形式显示</span>
+                                </div>
+                                <div class="radio-circle"></div>
+                            </div>
+
+                            <!-- Bold -->
+                            <div class="style-option" data-style="bold">
+                                <div class="style-info">
+                                    <span class="style-name">粗体</span>
+                                    <span class="style-desc">生词以粗体的形式显示</span>
+                                </div>
+                                <div class="radio-circle"></div>
                             </div>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" id="highlight-toggle" checked>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                </div>
 
-                <!-- Settings Form (Moved from original) -->
-                <div class="setting-card">
-                     <div id="highlight-settings-panel" class="highlight-sub-panel visible" style="max-height: none; opacity: 1; margin: 0; padding: 0; border: none;">
-                        <!-- Style Selector -->
-                        <div class="sub-section">
-                            <label class="sub-label">样式</label>
-                            <div class="style-selector">
-                                <button class="style-btn active" data-style="underline" title="下划线">
-                                    <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
-                                </button>
-                                <button class="style-btn" data-style="background" title="背景高亮">
-                                    <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
-                                </button>
-                                <button class="style-btn" data-style="bold" title="粗体">
-                                    <strong>B</strong>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Color Picker -->
-                        <div class="sub-section">
-                            <label class="sub-label">颜色</label>
+                        <!-- Color Picker (Moved to bottom) -->
+                        <div class="sub-section color-section">
+                            <label class="sub-label">高亮颜色</label>
                             <div class="color-palette">
                                 <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
                                     title="黄色"></div>
@@ -247,13 +256,6 @@
                             </div>
                         </div>
 
-                        <!-- Preview -->
-                        <div class="sub-section">
-                            <label class="sub-label">预览</label>
-                            <div class="preview-box">
-                                这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

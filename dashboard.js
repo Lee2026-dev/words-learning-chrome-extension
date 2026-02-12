@@ -231,50 +231,59 @@
                     <div class="list-header">
                         <button id="back-to-dashboard-from-highlight" class="back-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-                            返回
                         </button>
                         <span class="list-title">高亮设置</span>
                     </div>
                     
                     <div class="list-content">
                         <!-- Master Toggle -->
-                        <div class="setting-card">
-                            <div class="setting-row">
-                                <div class="setting-info">
-                                    <div class="setting-text">
-                                        <span class="setting-label">启用高亮</span>
-                                        <span class="setting-desc">在网页面上显示高亮单词</span>
-                                    </div>
-                                </div>
-                                <label class="switch">
-                                    <input type="checkbox" id="highlight-toggle" checked>
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                        </div>
 
                         <!-- Highlight Config (Always Visible here) -->
                         <div class="setting-card">
                             <div id="highlight-settings-panel" class="highlight-sub-panel visible" style="max-height: none; opacity: 1; margin: 0; padding: 0; border: none;">
-                                <!-- Style Selector -->
-                                <div class="sub-section">
-                                    <label class="sub-label">样式</label>
-                                    <div class="style-selector">
-                                        <button class="style-btn active" data-style="underline" title="下划线">
-                                            <span style="text-decoration: underline; text-decoration-thickness: 2px;">U</span>
-                                        </button>
-                                        <button class="style-btn" data-style="background" title="背景高亮">
-                                            <span style="background: #FCD34D; padding: 2px 6px; border-radius: 3px;">A</span>
-                                        </button>
-                                        <button class="style-btn" data-style="bold" title="粗体">
-                                            <strong>B</strong>
-                                        </button>
+                                
+                                <!-- Style List -->
+                                <div class="style-list">
+                                    <!-- Highlight (Background) -->
+                                    <div class="style-option" data-style="background">
+                                        <div class="style-info">
+                                            <span class="style-name">高亮</span>
+                                            <span class="style-desc">生词以颜色高亮的形式突出显示</span>
+                                        </div>
+                                        <div class="radio-circle"></div>
+                                    </div>
+
+                                    <!-- Transparency (Mask) -->
+                                    <div class="style-option" data-style="mask">
+                                        <div class="style-info">
+                                            <span class="style-name">透明度</span>
+                                            <span class="style-desc">生词以透明度的形式显示，不干扰阅读</span>
+                                        </div>
+                                        <div class="radio-circle"></div>
+                                    </div>
+
+                                    <!-- Underline -->
+                                    <div class="style-option" data-style="underline">
+                                        <div class="style-info">
+                                            <span class="style-name">下划线</span>
+                                            <span class="style-desc">生词以带有颜色的下划线的形式显示</span>
+                                        </div>
+                                        <div class="radio-circle"></div>
+                                    </div>
+
+                                    <!-- Bold -->
+                                    <div class="style-option" data-style="bold">
+                                        <div class="style-info">
+                                            <span class="style-name">粗体</span>
+                                            <span class="style-desc">生词以粗体的形式显示</span>
+                                        </div>
+                                        <div class="radio-circle"></div>
                                     </div>
                                 </div>
 
                                 <!-- Color Picker -->
-                                <div class="sub-section">
-                                    <label class="sub-label">颜色</label>
+                                <div class="sub-section color-section">
+                                    <label class="sub-label">高亮颜色</label>
                                     <div class="color-palette">
                                         <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
                                             title="黄色"></div>
@@ -305,13 +314,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Preview -->
-                                <div class="sub-section">
-                                    <label class="sub-label">预览</label>
-                                    <div class="preview-box">
-                                        这是 <span id="preview-text" class="preview-highlight">示例</span> 文本。
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -389,36 +391,29 @@
     }
 
     function updateSettingsUI(settings) {
-        const highlightToggle = shadowRoot.querySelector('#highlight-toggle');
+        // const highlightToggle = shadowRoot.querySelector('#highlight-toggle'); // Removed
         const langSelect = shadowRoot.querySelector('#target-lang');
         const immersionToggle = shadowRoot.querySelector('#immersion-toggle');
         const youtubeToggle = shadowRoot.querySelector('#youtube-toggle');
 
-        if (highlightToggle) highlightToggle.checked = settings.highlightEnabled !== false;
+        // if (highlightToggle) highlightToggle.checked = settings.highlightEnabled !== false; // Logic handled internally mostly
         if (langSelect) langSelect.value = settings.targetLanguage || 'zh';
         if (immersionToggle) immersionToggle.checked = settings.immersionMode === true;
         if (youtubeToggle) youtubeToggle.checked = settings.youtubeSubtitlesEnabled !== false;
 
         // Highlighter Customization
         const highlightPanel = shadowRoot.querySelector('#highlight-settings-panel');
-        const styleBtns = shadowRoot.querySelectorAll('.style-btn');
+        const styleOptions = shadowRoot.querySelectorAll('.style-option');
         const colorSwatches = shadowRoot.querySelectorAll('.color-swatch');
         const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
 
         const highlightStyle = settings.highlightStyle || 'underline';
         const highlightColor = settings.highlightColor || '#FCD34D';
 
-        // Visibility - Panel is always visible in its own view now
-        // if (highlightToggle && highlightToggle.checked) {
-        //     highlightPanel.classList.add('visible');
-        // } else {
-        //     highlightPanel.classList.remove('visible');
-        // }
-
         // Active States
-        styleBtns.forEach(btn => {
-            if (btn.dataset.style === highlightStyle) btn.classList.add('active');
-            else btn.classList.remove('active');
+        styleOptions.forEach(opt => {
+            if (opt.dataset.style === highlightStyle) opt.classList.add('active');
+            else opt.classList.remove('active');
         });
 
         colorSwatches.forEach(swatch => {
@@ -427,57 +422,13 @@
         });
 
         if (customColorPicker) customColorPicker.value = highlightColor;
-
-        updatePreview(shadowRoot, highlightStyle, highlightColor);
-    }
-
-    function updatePreview(shadowRoot, style, color) {
-        const previewText = shadowRoot.querySelector('#preview-text');
-        if (!previewText) return;
-
-        // Get current style and color if not provided
-        if (!style) {
-            style = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
-        }
-        if (!color) {
-            color = shadowRoot.querySelector('.color-swatch.active')?.dataset.color || shadowRoot.querySelector('#custom-color-picker')?.value || '#FCD34D';
-        }
-
-        previewText.className = 'preview-highlight'; // Reset classes
-        previewText.classList.add(`style-${style}`);
-
-        if (style === 'underline') {
-            previewText.style.textDecoration = `underline 2px ${color}`;
-            previewText.style.backgroundColor = '';
-            previewText.style.color = '';
-        } else if (style === 'background') {
-            previewText.style.backgroundColor = color;
-            previewText.style.textDecoration = '';
-            previewText.style.color = '';
-        } else if (style === 'bold') {
-            previewText.style.color = color;
-            previewText.style.backgroundColor = '';
-            previewText.style.textDecorationColor = '';
-        }
     }
 
     function bindDashboardEvents() {
         // We use shadowRoot.getElementById/querySelector
 
         // Settings Toggles
-        const highlightToggle = shadowRoot.querySelector('#highlight-toggle');
-        if (highlightToggle) {
-            highlightToggle.addEventListener('change', (e) => {
-                updateSetting('highlightEnabled', e.target.checked);
-                // NOTIFY CONTENT SCRIPT
-                window.postMessage({ type: 'LINGUA_UPDATE', action: 'toggleHighlight', enabled: e.target.checked }, '*');
-
-                // Toggle sub-panel - REMOVED (Panel is in separate view)
-                // const highlightPanel = shadowRoot.querySelector('#highlight-settings-panel');
-                // if (e.target.checked) highlightPanel.classList.add('visible');
-                // else highlightPanel.classList.remove('visible');
-            });
-        }
+        // const highlightToggle = shadowRoot.querySelector('#highlight-toggle'); // Removed
 
         const immersionToggle = shadowRoot.querySelector('#immersion-toggle');
         if (immersionToggle) {
@@ -491,9 +442,6 @@
         if (youtubeToggle) {
             youtubeToggle.addEventListener('change', (e) => {
                 updateSetting('youtubeSubtitlesEnabled', e.target.checked);
-                // content.js usually doesn't handle youtube toggle directly unless it injects youtube.js?
-                // youtube.js listens to storage changes or init?
-                // Let's ensure we notify if needed.
             });
         }
 
@@ -504,17 +452,17 @@
             });
         }
 
-        // Highlight Styles: Buttons
-        const styleBtns = shadowRoot.querySelectorAll('.style-btn');
-        styleBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+        // Highlight Styles: Options
+        const styleOptions = shadowRoot.querySelectorAll('.style-option');
+        styleOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
                 const highlightColor = shadowRoot.querySelector('#custom-color-picker')?.value || '#FCD34D';
-                styleBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+                styleOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
 
-                const newStyle = btn.dataset.style;
+                const newStyle = opt.dataset.style;
                 updateSetting('highlightStyle', newStyle);
-                updatePreview(newStyle, highlightColor);
+                // No preview to update
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: newStyle, color: highlightColor }, '*');
             });
         });
@@ -523,7 +471,7 @@
         const colorSwatches = shadowRoot.querySelectorAll('.color-swatch');
         colorSwatches.forEach(swatch => {
             swatch.addEventListener('click', () => {
-                const highlightStyle = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
+                const highlightStyle = shadowRoot.querySelector('.style-option.active')?.dataset.style || 'underline';
                 colorSwatches.forEach(s => s.classList.remove('active'));
                 swatch.classList.add('active');
 
@@ -532,7 +480,6 @@
                 if (picker) picker.value = newColor;
 
                 updateSetting('highlightColor', newColor);
-                updatePreview(highlightStyle, newColor);
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: highlightStyle, color: newColor }, '*');
             });
         });
@@ -540,12 +487,11 @@
         const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
         if (customColorPicker) {
             customColorPicker.addEventListener('input', (e) => {
-                const highlightStyle = shadowRoot.querySelector('.style-btn.active')?.dataset.style || 'underline';
+                const highlightStyle = shadowRoot.querySelector('.style-option.active')?.dataset.style || 'underline';
                 const newColor = e.target.value;
 
                 colorSwatches.forEach(s => s.classList.remove('active'));
                 updateSetting('highlightColor', newColor);
-                updatePreview(shadowRoot, highlightStyle, newColor);
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: highlightStyle, color: newColor }, '*');
             });
         }
