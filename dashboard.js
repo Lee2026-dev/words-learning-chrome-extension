@@ -71,6 +71,13 @@
 
         // Bind Events
         bindDashboardEvents();
+
+        // Listen for storage changes to auto-update stats
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === 'local' && changes.vocabulary) {
+                refreshDashboardData();
+            }
+        });
     }
 
     function getDashboardHTML() {
@@ -573,11 +580,11 @@
                 item.className = 'word-item';
                 item.innerHTML = `
                     <div class="word-info">
-                        <div class="word-main">${word.word}</div>
+                        <div class="word-main">${word.original}</div>
                         <div class="word-trans">${word.translation}</div>
                     </div>
                     <div class="word-actions">
-                        <button class="icon-btn play-audio" data-word="${word.word}">
+                        <button class="icon-btn play-audio" data-word="${word.original}">
                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
                         </button>
                     </div>
@@ -587,7 +594,7 @@
                 const playBtn = item.querySelector('.play-audio');
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const utterance = new SpeechSynthesisUtterance(word.word);
+                    const utterance = new SpeechSynthesisUtterance(word.original);
                     window.speechSynthesis.speak(utterance);
                 });
 

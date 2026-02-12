@@ -28,9 +28,9 @@ let bubbleElement = null;
                 const range = selection.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
 
-                // Position at the end of the selection
-                const x = rect.right + window.scrollX;
-                const y = rect.bottom + window.scrollY + 5;
+                // Position at the center of the selection (Viewport coordinates for position:fixed)
+                const x = rect.left + (rect.width / 2);
+                const y = rect.bottom + 5;
 
                 showTriggerIcon(x, y, text);
             } else {
@@ -435,46 +435,41 @@ function showBubble(original, translation, isLoading = false, context = "", cont
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
 
-    const bubbleWidth = 340; // Defined in CSS
-    const center = rect.left + (rect.width / 2);
-    let left = center - (bubbleWidth / 2) + window.scrollX;
+    // Center horizontally relative to selection using viewport coordinates (fixed)
+    let left = rect.left + (rect.width / 2);
+    const top = rect.bottom + 10;
 
-    // Boundary Checks
-    if (left < 10) left = 10;
-    if (left + bubbleWidth > window.innerWidth) {
-        left = window.innerWidth - bubbleWidth - 20;
-    }
-
-    const top = rect.bottom + window.scrollY + 10;
-
+    host.style.position = 'fixed';
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;
+    host.style.transform = "translateX(-50%)"; // Center alignment
 
     renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
-    // Note: closeBubbleOutside listener is registered inside renderBubbleSetup
 }
 
 function showBubbleAt(x, y, original, translation, isLoading = false, context = "", contextTranslation = "", phonetic = "") {
     const host = createBubbleElement();
 
-    // Coordinates from event are clientX/Y, add scroll for absolute positioning
-    const top = y + window.scrollY + 20;
-    const left = x + window.scrollX;
+    // Coordinates are viewport-based (clientX/Y)
+    const top = y + 20;
+    const left = x;
 
+    host.style.position = 'fixed';
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;
 
     renderBubbleSetup(host, original, translation, isLoading, context, contextTranslation, phonetic);
-    // Note: closeBubbleOutside listener is registered inside renderBubbleSetup
 }
 
 async function showSavedWordBubble(e, wordObj) {
     const host = createBubbleElement();
-    const top = e.pageY + 10;
-    const left = e.pageX;
+    const top = e.clientY + 10; // Viewport coordinate
+    const left = e.clientX;
 
+    host.style.position = 'fixed';
     host.style.top = `${top}px`;
     host.style.left = `${left}px`;
+    host.style.transform = "none"; // Reset any previous transform if reused
 
     // 1. Show dynamic loading state using existing renderer
     renderBubbleSetup(host, wordObj.original, "更新中...", true, wordObj.context, "", wordObj.phonetic);
@@ -1026,6 +1021,7 @@ function showTriggerIcon(x, y, text) {
         });
     }
 
+    triggerIcon.style.position = 'fixed';
     triggerIcon.style.left = `${x}px`;
     triggerIcon.style.top = `${y}px`;
     triggerIcon.style.display = 'flex';
