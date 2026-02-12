@@ -242,6 +242,11 @@
                         <div class="setting-card">
                             <div id="highlight-settings-panel" class="highlight-sub-panel visible" style="max-height: none; opacity: 1; margin: 0; padding: 0; border: none;">
                                 
+                                <!-- Preview Box -->
+                                <div class="preview-box" style="margin-bottom: 20px;">
+                                    This is a <span id="highlight-preview-text" class="preview-highlight">highlighted</span> word in context.
+                                </div>
+                                
                                 <!-- Style List -->
                                 <div class="style-list">
                                     <!-- Highlight (Background) -->
@@ -281,35 +286,19 @@
                                     </div>
                                 </div>
 
-                                <!-- Color Picker -->
-                                <div class="sub-section color-section">
-                                    <label class="sub-label">高亮颜色</label>
-                                    <div class="color-palette">
-                                        <div class="color-swatch active" style="background: #FCD34D;" data-color="#FCD34D"
-                                            title="黄色"></div>
-                                        <div class="color-swatch" style="background: #4ADE80;" data-color="#4ADE80" title="绿色">
+                                <!-- Color Config Row -->
+                                <div class="style-list" id="color-config-list" style="margin-bottom: 0;">
+                                    <div class="style-option color-config-option">
+                                        <div class="style-info">
+                                            <span class="style-name">
+                                                <span class="style-icon-small">🎨</span>
+                                                高亮颜色
+                                            </span>
+                                            <span class="style-desc">点击色块选择自定义颜色</span>
                                         </div>
-                                        <div class="color-swatch" style="background: #F472B6;" data-color="#F472B6" title="粉色">
-                                        </div>
-                                        <div class="color-swatch" style="background: #60A5FA;" data-color="#60A5FA" title="蓝色">
-                                        </div>
-                                        <div class="color-swatch" style="background: #A78BFA;" data-color="#A78BFA" title="紫色">
-                                        </div>
-                                        <label class="color-picker-wrapper" title="自定义颜色">
+                                        <label class="color-swatch-wrapper">
                                             <input type="color" id="custom-color-picker" value="#FCD34D">
-                                            <div class="color-picker-icon">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                    stroke-linecap="round" stroke-linejoin="round">
-                                                    <circle cx="13.5" cy="6.5" r=".5"></circle>
-                                                    <circle cx="17.5" cy="10.5" r=".5"></circle>
-                                                    <circle cx="8.5" cy="7.5" r=".5"></circle>
-                                                    <circle cx="6.5" cy="12.5" r=".5"></circle>
-                                                    <path
-                                                        d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z">
-                                                    </path>
-                                                </svg>
-                                            </div>
+                                            <div id="color-preview"></div>
                                         </label>
                                     </div>
                                 </div>
@@ -402,10 +391,9 @@
         if (youtubeToggle) youtubeToggle.checked = settings.youtubeSubtitlesEnabled !== false;
 
         // Highlighter Customization
-        const highlightPanel = shadowRoot.querySelector('#highlight-settings-panel');
-        const styleOptions = shadowRoot.querySelectorAll('.style-option');
-        const colorSwatches = shadowRoot.querySelectorAll('.color-swatch');
+        const styleOptions = shadowRoot.querySelectorAll('.style-option[data-style]');
         const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
+        const colorPreview = shadowRoot.querySelector('#color-preview');
 
         const highlightStyle = settings.highlightStyle || 'underline';
         const highlightColor = settings.highlightColor || '#FCD34D';
@@ -416,12 +404,42 @@
             else opt.classList.remove('active');
         });
 
-        colorSwatches.forEach(swatch => {
-            if (swatch.dataset.color === highlightColor) swatch.classList.add('active');
-            else swatch.classList.remove('active');
-        });
+        if (customColorPicker) {
+            customColorPicker.value = highlightColor;
+            if (colorPreview) colorPreview.style.backgroundColor = highlightColor;
+        }
 
-        if (customColorPicker) customColorPicker.value = highlightColor;
+        // Update Preview Text
+        updatePreviewText(highlightStyle, highlightColor);
+    }
+
+    function updatePreviewText(style, color) {
+        if (!shadowRoot) return;
+        const previewText = shadowRoot.querySelector('#highlight-preview-text');
+        if (!previewText) return;
+
+        // Reset basic styles
+        previewText.className = 'preview-highlight'; // Ensure base class
+        previewText.style = ''; // Clear inline styles
+
+        if (style === 'background') {
+            previewText.style.backgroundColor = 'transparent';
+            previewText.style.color = color;
+            previewText.style.textDecoration = 'none';
+        } else if (style === 'mask') {
+            previewText.style.backgroundColor = '#e2e8f0'; // Use standard grey for mask
+            previewText.style.color = 'transparent';
+            previewText.style.padding = '2px 4px';
+            previewText.style.borderRadius = '4px';
+        } else if (style === 'underline') {
+            previewText.style.textDecoration = 'underline';
+            previewText.style.textDecorationColor = color;
+            previewText.style.textDecorationThickness = '2px';
+            previewText.style.textUnderlineOffset = '2px';
+        } else if (style === 'bold') {
+            previewText.style.fontWeight = 'bold';
+            previewText.style.color = color;
+        }
     }
 
     function bindDashboardEvents() {
@@ -453,45 +471,31 @@
         }
 
         // Highlight Styles: Options
-        const styleOptions = shadowRoot.querySelectorAll('.style-option');
+        const styleOptions = shadowRoot.querySelectorAll('.style-option[data-style]');
         styleOptions.forEach(opt => {
             opt.addEventListener('click', () => {
-                const highlightColor = shadowRoot.querySelector('#custom-color-picker')?.value || '#FCD34D';
+                const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
+                const highlightColor = customColorPicker ? customColorPicker.value : '#FCD34D';
                 styleOptions.forEach(o => o.classList.remove('active'));
                 opt.classList.add('active');
 
                 const newStyle = opt.dataset.style;
                 updateSetting('highlightStyle', newStyle);
-                // No preview to update
+                updatePreviewText(newStyle, highlightColor);
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: newStyle, color: highlightColor }, '*');
             });
         });
 
-        // Highlight Styles: Colors
-        const colorSwatches = shadowRoot.querySelectorAll('.color-swatch');
-        colorSwatches.forEach(swatch => {
-            swatch.addEventListener('click', () => {
-                const highlightStyle = shadowRoot.querySelector('.style-option.active')?.dataset.style || 'underline';
-                colorSwatches.forEach(s => s.classList.remove('active'));
-                swatch.classList.add('active');
-
-                const newColor = swatch.dataset.color;
-                const picker = shadowRoot.querySelector('#custom-color-picker');
-                if (picker) picker.value = newColor;
-
-                updateSetting('highlightColor', newColor);
-                window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: highlightStyle, color: newColor }, '*');
-            });
-        });
-
         const customColorPicker = shadowRoot.querySelector('#custom-color-picker');
+        const colorPreview = shadowRoot.querySelector('#color-preview');
         if (customColorPicker) {
             customColorPicker.addEventListener('input', (e) => {
-                const highlightStyle = shadowRoot.querySelector('.style-option.active')?.dataset.style || 'underline';
+                const highlightStyle = shadowRoot.querySelector('.style-option[data-style].active')?.dataset.style || 'underline';
                 const newColor = e.target.value;
+                if (colorPreview) colorPreview.style.backgroundColor = newColor;
 
-                colorSwatches.forEach(s => s.classList.remove('active'));
                 updateSetting('highlightColor', newColor);
+                updatePreviewText(highlightStyle, newColor);
                 window.postMessage({ type: 'LINGUA_UPDATE', action: 'updateHighlightStyle', style: highlightStyle, color: newColor }, '*');
             });
         }

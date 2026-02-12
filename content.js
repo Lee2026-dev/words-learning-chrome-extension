@@ -201,9 +201,8 @@ function applyHighlightStyle(element, style, color) {
             el.style.textDecorationThickness = '2px';
             el.style.textUnderlineOffset = '2px';
         } else if (s === 'background') {
-            el.style.backgroundColor = c;
-            el.style.padding = '2px 4px';
-            el.style.borderRadius = '3px';
+            el.style.color = c;
+            el.style.backgroundColor = 'transparent';
         } else if (s === 'bold') {
             el.style.fontWeight = '700';
             el.style.color = c;

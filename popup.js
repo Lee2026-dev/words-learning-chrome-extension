@@ -92,9 +92,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Highlighter Customization Panel
-        const styleOptions = document.querySelectorAll('.style-option');
-        const colorSwatches = document.querySelectorAll('.color-swatch');
+        const styleOptions = document.querySelectorAll('.style-option[data-style]');
         const customColorPicker = document.getElementById('custom-color-picker');
+        const colorPreview = document.getElementById('color-preview');
 
         // Initialize highlighter settings
         const highlightStyle = settings.highlightStyle || 'underline';
@@ -131,16 +131,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Set initial active color swatch
-        colorSwatches.forEach(swatch => {
-            if (swatch.dataset.color === highlightColor) {
-                swatch.classList.add('active');
-            }
-        });
-
-        // Set custom color picker value
+        // Set custom color picker value and preview
         if (customColorPicker) {
             customColorPicker.value = highlightColor;
+            if (colorPreview) colorPreview.style.backgroundColor = highlightColor;
+        }
+
+        // Init Preview
+        updatePreviewText(highlightStyle, highlightColor);
+
+        // Helper: Update Preview Text
+        function updatePreviewText(style, color) {
+            const previewText = document.getElementById('highlight-preview-text');
+            if (!previewText) return;
+
+            // Reset basic styles
+            previewText.className = 'preview-highlight';
+            previewText.style = ''; // Clear inline
+
+            if (style === 'background') {
+                previewText.style.backgroundColor = 'transparent';
+                previewText.style.color = color;
+                previewText.style.textDecoration = 'none';
+            } else if (style === 'mask') {
+                previewText.style.backgroundColor = '#e2e8f0'; // Standard mask grey
+                previewText.style.color = 'transparent';
+                previewText.style.padding = '2px 4px';
+                previewText.style.borderRadius = '4px';
+                previewText.style.textDecoration = 'none';
+            } else if (style === 'underline') {
+                previewText.style.textDecoration = 'underline';
+                previewText.style.textDecorationColor = color;
+                previewText.style.textDecorationThickness = '2px';
+                previewText.style.textUnderlineOffset = '2px';
+            } else if (style === 'bold') {
+                previewText.style.fontWeight = 'bold';
+                previewText.style.color = color;
+                previewText.style.textDecoration = 'none';
+            }
         }
 
         // Style option click handlers
@@ -152,36 +180,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newStyle = opt.dataset.style;
                 updateSetting('highlightStyle', newStyle);
 
-                // If style is right-note or mask, color might still be relevant for some sub-features or future use
-                notifyTab('updateHighlightStyle', { style: newStyle, color: highlightColor });
+                // Use current literal color
+                const currentColor = customColorPicker ? customColorPicker.value : highlightColor;
+
+                updatePreviewText(newStyle, currentColor);
+                notifyTab('updateHighlightStyle', { style: newStyle, color: currentColor });
             });
         });
 
-        // Color swatch click handlers
-        colorSwatches.forEach(swatch => {
-            swatch.addEventListener('click', () => {
-                colorSwatches.forEach(s => s.classList.remove('active'));
-                swatch.classList.add('active');
-
-                const newColor = swatch.dataset.color;
-                // Get current style
-                const currentStyle = document.querySelector('.style-option.active')?.dataset.style || 'underline';
-
-                updateSetting('highlightColor', newColor);
-                if (customColorPicker) customColorPicker.value = newColor;
-
-                notifyTab('updateHighlightStyle', { style: currentStyle, color: newColor });
-            });
-        });
-
-        // Custom color picker handler
+        // Custom color picker handler (Single row)
         if (customColorPicker) {
             customColorPicker.addEventListener('input', (e) => {
                 const newColor = e.target.value;
-                const currentStyle = document.querySelector('.style-option.active')?.dataset.style || 'underline';
+                if (colorPreview) colorPreview.style.backgroundColor = newColor;
 
-                colorSwatches.forEach(s => s.classList.remove('active'));
+                const currentStyle = document.querySelector('.style-option[data-style].active')?.dataset.style || 'underline';
+
                 updateSetting('highlightColor', newColor);
+                updatePreviewText(currentStyle, newColor);
                 notifyTab('updateHighlightStyle', { style: currentStyle, color: newColor });
             });
         }
