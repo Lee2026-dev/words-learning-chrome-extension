@@ -632,9 +632,6 @@ function renderSavedBubbleRich(host, wordObj, richData) {
     };
 
     host.querySelector('#lingua-close-btn').onclick = closeBubble;
-
-    // Enable dragging
-    makeBubbleDraggable(host);
 }
 
 function renderBubbleSetup(host, original, translationData, isLoading, context, contextTranslation, phonetic) {
@@ -842,9 +839,6 @@ function renderBubbleSetup(host, original, translationData, isLoading, context, 
     const closeBtn = host.querySelector('#lingua-close-btn');
     if (closeBtn) closeBtn.onclick = closeBubble;
 
-    // Enable dragging
-    makeBubbleDraggable(host);
-
     // Remove any existing listener before adding to prevent duplicates
     document.removeEventListener('mousedown', closeBubbleOutside);
     document.addEventListener('mousedown', closeBubbleOutside);
@@ -1038,65 +1032,4 @@ function hideTriggerIcon() {
     if (triggerIcon) {
         triggerIcon.style.display = 'none';
     }
-}
-
-// --- Bubble Drag Functionality ---
-function makeBubbleDraggable(host) {
-    const header = host.querySelector('.bubble-header');
-    if (!header) return;
-
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
-
-    header.addEventListener('mousedown', (e) => {
-        // Don't start drag if clicking on buttons
-        if (e.target.closest('button')) return;
-
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-
-        // Get current position
-        const rect = host.getBoundingClientRect();
-        initialLeft = rect.left + window.scrollX;
-        initialTop = rect.top + window.scrollY;
-
-        // Visual feedback
-        host.classList.add('bubble-dragging');
-
-        e.preventDefault(); // Prevent text selection
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-
-        let newLeft = initialLeft + deltaX;
-        let newTop = initialTop + deltaY;
-
-        // Boundary checks
-        const bubbleRect = host.getBoundingClientRect();
-        const maxLeft = window.innerWidth - bubbleRect.width - 10;
-        const maxTop = window.innerHeight + window.scrollY - bubbleRect.height - 10;
-
-        if (newLeft < 10) newLeft = 10;
-        if (newLeft > maxLeft) newLeft = maxLeft;
-        if (newTop < window.scrollY + 10) newTop = window.scrollY + 10;
-        if (newTop > maxTop) newTop = maxTop;
-
-        host.style.left = `${newLeft}px`;
-        host.style.top = `${newTop}px`;
-    });
-
-    document.addEventListener('mouseup', () => {
-        if (isDragging) {
-            isDragging = false;
-            host.classList.remove('bubble-dragging');
-        }
-    });
 }

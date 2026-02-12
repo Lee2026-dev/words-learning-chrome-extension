@@ -177,16 +177,9 @@
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 12px;
-    cursor: move;
-    /* Indicate draggable */
-    user-select: none;
-    /* Prevent text selection during drag */
 }
 
-.bubble-dragging {
-    opacity: 0.8;
-    cursor: move !important;
-}
+
 
 .bubble-word {
     font-weight: 600;
