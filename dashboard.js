@@ -576,12 +576,29 @@
             }
 
             words.forEach(word => {
+                // Enrich translation from meanings array
+                let fullMeanings = "";
+                if (word.meanings && Array.isArray(word.meanings) && word.meanings.length > 0) {
+                    fullMeanings = word.meanings.map(m => {
+                        const pos = m.partOfSpeech ? `<span class="word-pos">${m.partOfSpeech}</span> ` : "";
+                        const defs = Array.isArray(m.definitions) ? m.definitions.join(', ') : "";
+                        return `${pos}${defs}`;
+                    }).join('; ');
+                } else {
+                    fullMeanings = word.translation || "";
+                }
+
+                const phonetic = word.phonetic ? `<span class="word-phonetic">[${word.phonetic}]</span>` : "";
+
                 const item = document.createElement('div');
                 item.className = 'word-item';
                 item.innerHTML = `
                     <div class="word-info">
-                        <div class="word-main">${word.original}</div>
-                        <div class="word-trans">${word.translation}</div>
+                        <div class="word-line">
+                            <span class="word-main">${word.original}</span>
+                            ${phonetic}
+                            <span class="word-meanings">${fullMeanings}</span>
+                        </div>
                     </div>
                     <div class="word-actions">
                         <button class="icon-btn play-audio" data-word="${word.original}">
